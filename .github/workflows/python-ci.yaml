@@ -26,8 +26,7 @@ jobs:
         run: pip install -r requirements.txt
       
       - name: Run Pytest
-        run: | 
-            pytest -vvx || echo "No tests collected; continuing"
+        run: pytest -vvx 
   
   pylint:
     runs-on: ubuntu-latest
