@@ -1,4 +1,4 @@
-name: Python CI
+name: Python CI/CD
 
 on:
   push:
@@ -43,6 +43,6 @@ jobs:
         run: pip install -r requirements.txt
       
       - name: Run Pylint
-        run: pylint --fail-under=8 dashboard pipelines
+        run: pylint --fail-under=8 dashboard/*.py pipelines/*.py
     
   

@@ -2,7 +2,7 @@
 
 
 def hello_world():
-    """Returns a simple message."""
+    """Returns a message."""
     return "Hello World!"
 
 
