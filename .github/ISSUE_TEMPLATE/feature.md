@@ -1,7 +1,7 @@
 ---
-name: Ticket
+name: Feature
 about: Template for creating a work ticket.
-title: "[TICKET] <ticket-name>"
+title: "[FEATURE] <ticket-name>"
 labels: ''
 assignees: ''
 
