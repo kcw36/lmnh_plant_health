@@ -1,6 +1,6 @@
 """Tests for main.py"""
 
-from main import hello_world
+from longterm_main import hello_world
 
 
 def test_hello_world():
