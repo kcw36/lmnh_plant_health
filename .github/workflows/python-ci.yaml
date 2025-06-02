@@ -1,0 +1,48 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      #- main
+      - automated_deployment
+  pull_request:
+    branches:
+      #- main
+      - automated_deployment
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installing Python
+        uses : actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Installing dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run Pytest
+        run: pytest -vvx
+  
+  pylint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installing Python
+        uses : actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Installing dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run Pylint
+        run: pylint --fail-under=8 dashboard pipelines
+    
+  
