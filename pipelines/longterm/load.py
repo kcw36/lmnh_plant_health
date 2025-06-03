@@ -19,14 +19,14 @@ def load_to_s3(awsclient: client) -> bool:
     logger.info("Starting load to S3...")
 
 
-def create_data_directory():
-    """Create data directory"""
+def create_data_directory() -> bool:
+    """Return true if data directory created successfully"""
     logger = getLogger(__name__)
     logger.info("Creating empty data directory for Parquet files...")
 
 
-def delete_data_directory():
-    """Delete the filled data directory"""
+def delete_data_directory() -> bool:
+    """Return true if deleted data directory"""
     logger = getLogger(__name__)
     logger.info("Deleting filled data directory...")
 
