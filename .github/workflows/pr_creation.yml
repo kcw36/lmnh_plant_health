@@ -3,7 +3,7 @@ name: PR Creation
 
 on:
   pull_request:
-    types: [opened, edited, ready_for_review, synchronize]
+    types: [opened]
 
 jobs:
   move-linked-issues:
