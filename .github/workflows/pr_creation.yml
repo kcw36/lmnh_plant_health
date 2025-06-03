@@ -12,7 +12,7 @@ jobs:
     steps:
      - name: Get linked issues of a PR
        env:
-        GH_TOKEN: ${{ secrets.YOUR_ACCESS_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         USER: kcw36
         PROJECT_NUMBER: 1
         PR_ID: ${{ github.event.pull_request.node_id }}
