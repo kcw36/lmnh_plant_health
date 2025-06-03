@@ -41,7 +41,7 @@ def create_parquet(data: DataFrame) -> bool:
         return False
     pq.write_to_dataset(datatable, root_path="data/plant",
                         partition_cols=["year", "month", "day", "plant_id"],
-                        basename_template="summary")
+                        basename_template="summary-{i}")
     logger.info("Parquet created successfully.")
     return True
 
@@ -84,5 +84,8 @@ if __name__ == "__main__":
     load_dotenv()
     sample_dataframe = DataFrame({"plant_id": [1, 2, 3],
                                   "name": ["colin", "kevin", "sam"],
-                                  "botanist": [1, 2, 1]})
+                                  "botanist": [1, 2, 1],
+                                 "year": [2000, 2001, 2002],
+                                  "month": [1, 2, 3],
+                                  "day": [1, 2, 3]})
     load_all(sample_dataframe)
