@@ -42,7 +42,7 @@ jobs:
         echo "LINKED_ISSUE_ID=$linked_issue_id" >> $GITHUB_ENV
      - name: Change status to "Being Worked On"
        env:
-        GH_TOKEN: ${{ secrets.YOUR_ACCESS_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PROJECT_ID: PVT_kwHOBpjqoc4A6fB5
         ISSUE_ID: ${{ env.LINKED_ISSUE_ID }}
         STATUS_FIELD_ID: PVTSSF_lAHOBpjqoc4A6fB5zgvEHBM
