@@ -6,7 +6,7 @@ on:
     types: [submitted]
 
 jobs:
-  Move linked issues to Ready:
+  move-linked-issues:
     runs-on: ubuntu-latest
   
     steps:
