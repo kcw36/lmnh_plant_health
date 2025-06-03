@@ -1,0 +1,34 @@
+# YML for automating moving the linked issues to Ready after approvals
+name: PR Approval
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  Move linked issues to Ready:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Get all reviews
+        id: reviews
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Count approving reviews
+        id: count
+        run: |
+          APPROVALS=$(echo '${{ steps.reviews.outputs.data }}' | jq '[.[] | select(.state == "APPROVED")] | length')
+          echo "Approvals: $APPROVALS"
+          echo "approvals=$APPROVALS" >> $GITHUB_OUTPUT
+      
+      - name: Move issue
+        if: steps.count.outputs.approvals >= 2
+        uses: rharter/github-move-linked-project-cards@v0.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          column: Ready
+          draft-column: Ready
