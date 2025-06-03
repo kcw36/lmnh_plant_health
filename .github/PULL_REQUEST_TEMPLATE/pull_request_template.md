@@ -1,6 +1,6 @@
 ## Title
 Provide a clear and concise title for your pull request.
-DO NOT include the title in your description use this help to pupulate the PR Title above.
+DO NOT include the title in your description use this help to populate the PR Title above.
 For example, "[PR] Implement extract tests"
 
 # Description
