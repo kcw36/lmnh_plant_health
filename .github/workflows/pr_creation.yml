@@ -12,9 +12,7 @@ jobs:
     steps:
      - name: Get linked issues of a PR
        env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        USER: kcw36
-        PROJECT_NUMBER: 1
+        GH_TOKEN: ${{ secrets.WORKFLOW_KEY }}
         PR_ID: ${{ github.event.pull_request.node_id }}
        run: |
         linked_issue_id="$( gh api graphql -f query='
@@ -42,7 +40,7 @@ jobs:
         echo "LINKED_ISSUE_ID=$linked_issue_id" >> $GITHUB_ENV
      - name: Change status to "Being Worked On"
        env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.WORKFLOW_KEY }}
         PROJECT_ID: PVT_kwHOBpjqoc4A6fB5
         ISSUE_ID: ${{ env.LINKED_ISSUE_ID }}
         STATUS_FIELD_ID: PVTSSF_lAHOBpjqoc4A6fB5zgvEHBM
