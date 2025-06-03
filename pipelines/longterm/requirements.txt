@@ -1,2 +1,5 @@
 pylint
 pytest
+boto3
+pandas
+python-dotenv
