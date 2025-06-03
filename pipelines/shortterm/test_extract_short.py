@@ -33,7 +33,7 @@ def test_fetch_plant_info_404(requests_mock):
     mock_url = f"{URL_BASE}{plant_id}"
     requests_mock.get(mock_url, status_code=404)
 
-    with pytest.raises(APIError, match="Page not found."):
+    with pytest.raises(APIError, match="Plant not found."):
         fetch_plant_info(plant_id)
 
 
