@@ -1,6 +1,6 @@
 # Database
 
-The Liverpool Natural History Museum Plant Monitoring System is stored in two parts. With short-term daily data being stored on a SQL Server RDS instance, and long-term historical data being stored in an S3 bucket.
+The Liverpool Natural History Museum Plant Monitoring System is stored in two parts. With short-term daily data being stored on an AWS RDS instance using Microsoft SQL Server, and long-term historical data being stored in an S3 bucket.
 
 ## Short-term
 
