@@ -3,10 +3,10 @@ name: Python CI/CD
 on:
   push:
     branches:
-
+      - '*'  
   pull_request:
     branches:
-
+      - '*'  
   workflow_dispatch:
 
 jobs:
@@ -16,49 +16,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Caching pip dependencies
-      - uses: actions/cache@v4
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-
-      - name: Installing Python
-        uses : actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Installing dependencies
+      - name: Install dependencies
         run: pip install -r requirements.txt
-      
+
       - name: Run Pytest
         run: pytest -vvs
-  
+
   pylint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Caching pip dependencies
-      - uses: actions/cache@v4
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Installing Python
-        uses : actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Installing dependencies
+      - name: Install dependencies
         run: pip install -r requirements.txt
-      
+
       - name: Run Pylint
-        run: pylint --fail-under=8 dashboard/*.py pipelines/longterm/*.py pipelines/shortterm/*.py 
-    
-  
+        run: pylint --fail-under=8 dashboard/*.py pipelines/longterm/*.py pipelines/shortterm/*.py
