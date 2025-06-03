@@ -21,7 +21,7 @@ Directory containing the planning documents used to drive the project.
 - Transform module
     - Verifies data
     - Cleans data
-    - Fully normalises data for db
+    - Fully normalises data for database
 - Load
     - Short term storage
         - Some database
