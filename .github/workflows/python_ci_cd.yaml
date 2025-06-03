@@ -3,12 +3,11 @@ name: Python CI/CD
 on:
   push:
     branches:
-      #- main
-      - automated_deployment
+
   pull_request:
     branches:
-      #- main
-      - automated_deployment
+
+  workflow_dispatch:
 
 jobs:
   pytest:
@@ -17,16 +16,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Caching pip dependencies
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+
       - name: Installing Python
         uses : actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.x'
 
       - name: Installing dependencies
         run: pip install -r requirements.txt
       
       - name: Run Pytest
-        run: pytest -vvx 
+        run: pytest -vvs
   
   pylint:
     runs-on: ubuntu-latest
@@ -34,10 +42,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Caching pip dependencies
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Installing Python
         uses : actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.x'
 
       - name: Installing dependencies
         run: pip install -r requirements.txt
