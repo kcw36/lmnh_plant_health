@@ -2,7 +2,9 @@
 
 import requests
 import logging
+import pandas as pd
 import json
+import csv
 
 
 URL_BASE = "https://sigma-labs-bot.herokuapp.com/api/plants/"
@@ -67,6 +69,18 @@ def fetch_all_plants(start_plant: int = 1, end_plant: int = 51) -> list[dict]:
     return plants
 
 
+def save_to_csv(plant_data: list[dict], filename: str) -> None:
+    """Converts list of plant dicts to pandas df and saves as CSV."""
+
+    if not plant_data:
+        print("No plant data available to save.")
+        return
+
+    plants_df = pd.DataFrame(plant_data)
+    plants_df.to_csv(filename, index=False)
+    print(f"Saved {len(plant_data)} plant records to {filename}.")
+
+
 if __name__ == "__main__":
     configure_logs("skipped_plants.log")
     all_plant_data = fetch_all_plants()
@@ -74,3 +88,5 @@ if __name__ == "__main__":
         f"Successfully retrieved {len(all_plant_data)} plant records.\n"
         "Logged skipped entries to 'skipped_plants.log'."
     )
+
+    save_to_csv(all_plant_data, "plant_data.csv")
