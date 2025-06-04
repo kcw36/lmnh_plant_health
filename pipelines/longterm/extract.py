@@ -26,39 +26,26 @@ def get_connection():
     return connect(connection_string)
 
 
-def set_schema(conn: Connection):
-    """Set schema for connection."""
-    logger = getLogger(__name__)
-    logger.info("Setting DB schema..")
-    with conn.cursor() as curs:
-        schema = ENV["DB_SCHEMA"]
-        if not schema.isidentifier():
-            raise ValueError(f"Invalid schema name: {schema}")
-        curs.execute(f"USE {schema};")
-        curs.commit()
-
-
-def get_full_data(conn: Connection) -> list:
+def get_full_data(conn: Connection, schema: str) -> list:
     """Return row data from full sql query."""
     logger = getLogger(__name__)
     logger.info("Send SELECT query to RDS...")
     with conn.cursor() as curs:
-        query = """SELECT (p.plant_id, p.name,
+        query = f"""SELECT p.plant_id, p.name,
                      r.temperature, r.last_watered, r.soil_moisture,
-                     r.recording_taken, ci.name, co.name, b.name)
-                     FROM plant AS P
-                     JOIN record AS r
+                     r.recording_taken, ci.name, co.name, b.name
+                     FROM {schema}.plant AS P
+                     JOIN {schema}.record AS r
                      ON (p.plant_id = r.plant_id)
-                     JOIN botanist_plant AS bp
+                     JOIN {schema}.botanist_plant AS bp
                      ON (p.plant_id=bp.plant_id)
-                     JOIN botanist AS b
+                     JOIN {schema}.botanist AS b
                      ON (bp.botanist_id=b.botanist_id)
-                     JOIN origin_city AS ci
+                     JOIN {schema}.origin_city AS ci
                      ON (p.city_id = ci.city_id)
-                     JOIN origin_county AS co
+                     JOIN {schema}.origin_county AS co
                      ON (ci.country_id = co.country_id);"""
         curs.execute(query)
-        curs.fetchall()
         rows = curs.fetchall()
     return rows
 
@@ -102,14 +89,24 @@ def get_dataframe_from_dict(data: dict) -> DataFrame:
     return DataFrame(data)
 
 
-def truncate_record(conn: Connection):
+def truncate_record(conn: Connection, schema: str):
     """Remove data from records table."""
     logger = getLogger(__name__)
     logger.info("Removing data from Record table...")
     with conn.cursor() as curs:
-        query = "TRUNCATE TABLE record;"
+        query = f"TRUNCATE TABLE {schema}.record;"
         curs.execute(query)
         curs.commit()
+
+
+def get_schema() -> str:
+    """Return schema name from environment."""
+    logger = getLogger(__name__)
+    logger.info("Checking schema is valid...")
+    schema = ENV["DB_SCHEMA"]
+    if not schema.isidentifier():
+        raise ValueError(f"Invalid schema name: {schema}")
+    return schema
 
 
 def get_data_from_rds() -> DataFrame:
@@ -117,11 +114,11 @@ def get_data_from_rds() -> DataFrame:
     logger = getLogger(__name__)
     logger.info("Getting data from RDS...")
     rds_conn = get_connection()
-    set_schema(rds_conn)
-    data_rows = get_full_data(rds_conn)
+    target_schema = get_schema()
+    data_rows = get_full_data(rds_conn, target_schema)
     data_dict = get_dict_from_rows(data_rows)
     data_df = get_dataframe_from_dict(data_dict)
-    truncate_record(rds_conn)
+    truncate_record(rds_conn, target_schema)
     rds_conn.close()
     return data_df
 
