@@ -37,18 +37,23 @@ def insert_botanist(data: DataFrame):
     pass
 
 
-def insert_species(data: DataFrame):
-    """Insert data into `species` table."""
-    pass
-
-
-def insert_image(data: DataFrame):
-    """Insert data into `image` table."""
+def insert_botanist_plant(data: DataFrame):
+    """Insert data into `botanist` table."""
     pass
 
 
 def insert_origin_city(data: DataFrame):
     """Insert data into `origin_city` table."""
+    pass
+
+
+def insert_plant(data: DataFrame):
+    """Insert data into `botanist` table."""
+    pass
+
+
+def insert_record(data: DataFrame):
+    """Insert data into `botanist` table."""
     pass
 
 
