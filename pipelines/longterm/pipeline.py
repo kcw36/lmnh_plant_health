@@ -12,7 +12,7 @@ from load import load_all
 
 def set_logger():
     """Set logger."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.setLevel(INFO)
     logger.addHandler(StreamHandler(stdout))
 

@@ -1,16 +1,21 @@
 """Module for transforming data ready for S3."""
 
+from logging import getLogger
 from pandas import DataFrame
 from pandas.api.typing import DataFrameGroupBy
 
 
 def get_grouped_data(df: DataFrame) -> DataFrameGroupBy:
     """Return data grouped by key column."""
+    logger = getLogger()
+    logger.info("Creating group from Dataframe...")
     return df.groupby(by=['plant_id', 'plant_name', 'botanist'])
 
 
 def get_summary_stats(grouping: DataFrameGroupBy) -> DataFrame:
     """Return Dataframe with summary statistics from group."""
+    logger = getLogger()
+    logger.info("Getting summary statistics from group object...")
     summary = grouping.agg({'temperature': ['min', 'median', 'max'],
                             'soil_moisture': ['min', 'median', 'max'],
                             'plant_id': 'count'})
@@ -23,6 +28,8 @@ def get_summary_stats(grouping: DataFrameGroupBy) -> DataFrame:
 
 def get_summary_from_df(raw: DataFrame) -> DataFrame:
     """Return summary Dataframe from regular Dataframe."""
+    logger = getLogger()
+    logger.info("Getting summary stats from raw dataframe...")
     grouped_df = get_grouped_data(raw)
     return get_summary_stats(grouped_df)
 
