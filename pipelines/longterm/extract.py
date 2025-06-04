@@ -57,27 +57,27 @@ def get_dict_from_rows(rows: list) -> dict:
     logger = getLogger(__name__)
     logger.info("Converting rows to dictionary...")
     output_object = {
-        "plant_id": None,
-        "plant_name": None,
-        "temperature": None,
-        "last_watered": None,
-        "soil_moisture": None,
-        "recording_taken": None,
-        "city": None,
-        "country": None,
-        "botanist": None
+        "plant_id": [],
+        "plant_name": [],
+        "temperature": [],
+        "last_watered": [],
+        "soil_moisture": [],
+        "recording_taken": [],
+        "city": [],
+        "country": [],
+        "botanist": []
     }
     for row in rows:
-        if row.length == 9:
-            output_object["plant_id"] += row[0]
-            output_object["plant_name"] += row[1]
-            output_object["temperature"] += row[2]
-            output_object["last_watered"] += row[3]
-            output_object["soil_moisture"] += row[4]
-            output_object["recording_taken"] += row[5]
-            output_object["city"] += row[6]
-            output_object["country"] += row[7]
-            output_object["botanist"] += row[8]
+        if len(row) == 9:
+            output_object["plant_id"].append(row[0])
+            output_object["plant_name"].append(row[1])
+            output_object["temperature"].append(row[2])
+            output_object["last_watered"].append(row[3])
+            output_object["soil_moisture"].append(row[4])
+            output_object["recording_taken"].append(row[5])
+            output_object["city"].append(row[6])
+            output_object["country"].append(row[7])
+            output_object["botanist"].append(row[8])
             logger.info("Succesfully retrieved values from row")
         else:
             logger.error("Row data is malformed: %s", row)

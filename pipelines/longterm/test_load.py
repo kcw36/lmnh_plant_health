@@ -1,3 +1,4 @@
+# pylint: skip-file
 """Tests for long term load module."""
 
 from unittest.mock import Mock, patch, call

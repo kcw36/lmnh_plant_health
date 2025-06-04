@@ -31,9 +31,7 @@
     - `pip install -r requirements.txt`
 ## SQL Server Driver
 - ODBC Driver Manager
-```bash
-brew install unixodbc
-```
+    - `brew install unixodbc`
 - ODBC Driver for SQL from Mac
 ```bash
 brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
@@ -49,6 +47,7 @@ DB_PORT=<PORT>
 DB_NAME=<NAME_OF_DB>
 DB_PASSWORD=<PASS_FOR_DB>
 DB_USER=<USER_FOR_ACCESSING_DB>
+DB_SCHEMA=<SCHEMA_USED_FOR_DB>
 
 AWS_REGION=<REGION_THAT_RESOURCES_DEPLOY_TO>
 AWS_ACCESS_KEY_ID=<AWS_USER_KEY_IDENTIFIER>
