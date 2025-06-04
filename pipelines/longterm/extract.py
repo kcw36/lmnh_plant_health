@@ -43,10 +43,12 @@ def get_full_data(conn: Connection, schema: str) -> list:
                      ON (bp.botanist_id=b.botanist_id)
                      JOIN {schema}.origin_city AS ci
                      ON (p.city_id = ci.city_id)
-                     JOIN {schema}.origin_county AS co
+                     JOIN {schema}.origin_country AS co
                      ON (ci.country_id = co.country_id);"""
         curs.execute(query)
         rows = curs.fetchall()
+        if not rows:
+            logger.error("No data returned from RDS.")
     return rows
 
 
@@ -86,7 +88,7 @@ def get_dataframe_from_dict(data: dict) -> DataFrame:
     """Return Dataframe from dictionary data."""
     logger = getLogger(__name__)
     logger.info("Converting dictionary to Dataframe...")
-    return DataFrame(data)
+    return DataFrame.from_dict(data)
 
 
 def truncate_record(conn: Connection, schema: str):
@@ -116,9 +118,12 @@ def get_data_from_rds() -> DataFrame:
     rds_conn = get_connection()
     target_schema = get_schema()
     data_rows = get_full_data(rds_conn, target_schema)
-    data_dict = get_dict_from_rows(data_rows)
-    data_df = get_dataframe_from_dict(data_dict)
-    truncate_record(rds_conn, target_schema)
+    if data_rows:
+        data_dict = get_dict_from_rows(data_rows)
+        data_df = get_dataframe_from_dict(data_dict)
+        truncate_record(rds_conn, target_schema)
+    else:
+        data_df = DataFrame()
     rds_conn.close()
     return data_df
 

@@ -62,6 +62,7 @@ AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
 ## `pipeline`
 
 ## `extract`
+- Provides utilities for extracting data from a cloud hosted RDS for SQL Server Instance.
 
 ## `transform`
 
