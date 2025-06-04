@@ -1,0 +1,75 @@
+# YML for automating moving the linked issues to Ready after approvals
+name: PR Approval
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  move-linked-issues:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Get all reviews
+        id: reviews
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Count approving reviews
+        id: count
+        run: |
+          APPROVALS=$(echo '${{ steps.reviews.outputs.data }}' | jq '[.[] | select(.state == "APPROVED")] | length')
+          echo "Approvals: $APPROVALS"
+          echo "approvals=$APPROVALS" >> $GITHUB_OUTPUT
+      
+      - name: Get linked issues of a PR
+        if: steps.count.outputs.approvals >= 2
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_KEY }}
+          PR_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          linked_issue_id="$( gh api graphql -f query='
+          query($pr:ID!) {
+            node(id: $pr) {
+              ... on PullRequest {
+                closingIssuesReferences(first:1, userLinkedOnly:false) {
+                  totalCount
+                  nodes { 
+                    id 
+                    projectItems(first: 5) {
+                      nodes {
+                        id
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }' -f pr=$PR_ID --jq '.data.node.closingIssuesReferences.nodes[0].projectItems.nodes[0].id')"
+          echo "ISSUE ID:"
+          echo "$linked_issue_id"
+          echo "PR_ID:"
+          echo "${{env.PR_ID}}"
+          echo "LINKED_ISSUE_ID=$linked_issue_id" >> $GITHUB_ENV
+
+      - name: Change status to "Being Worked On"
+        if: steps.count.outputs.approvals >= 2
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_KEY }}
+          PROJECT_ID: PVT_kwHOBpjqoc4A6fB5
+          ISSUE_ID: ${{ env.LINKED_ISSUE_ID }}
+          STATUS_FIELD_ID: PVTSSF_lAHOBpjqoc4A6fB5zgvEHBM
+          BEING_WORKED_ON_OPTION_ID: 61e4505c
+        run: |
+          updatedAt="$( gh api graphql -f query='
+          mutation($issueId:ID!, $projectId:ID!) {
+            updateProjectV2ItemFieldValue(input: {projectId: $projectId, fieldId: "${{env.STATUS_FIELD_ID}}", itemId: $issueId, value: {singleSelectOptionId: "${{env.BEING_WORKED_ON_OPTION_ID}}"}}) {
+              projectV2Item {
+                type
+                updatedAt
+              }
+            }
+          }' -f issueId=$ISSUE_ID -f projectId=$PROJECT_ID  --jq '.data.updateProjectV2ItemFieldValue.projectV2Item.updatedAt')"
