@@ -64,7 +64,7 @@ AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
 - Provides utilities for extracting data from a cloud hosted RDS for SQL Server Instance.
 
 ## `transform`
-- Provides utilities for cleaning and normalising data ready for loading into an S3 Bucket.
+- Provides utilities for normalising data ready for loading into an S3 Bucket.
 
 ## `load`
 - Provides utilties for loading data into a cloud hosted AWS S3 bucket.
