@@ -11,22 +11,24 @@ from pyarrow import Table, parquet as pq
 
 
 def create_data_directory() -> bool:
-    """Return true if data directory created successfully"""
+    """Return true if data directory created successfully."""
     logger = getLogger(__name__)
     logger.info("Creating empty data directory for Parquet files...")
-    if not path.exists("data"):
-        mkdir("data")
-        mkdir("data/plant")
+    dir_path = "data"
+    if not path.exists(dir_path):
+        mkdir(dir_path)
+        mkdir(f"{dir_path}/plant")
         return True
     return False
 
 
 def delete_data_directory() -> bool:
-    """Return true if deleted data directory"""
+    """Return true if deleted data directory."""
     logger = getLogger(__name__)
     logger.info("Deleting filled data directory...")
-    rmtree("data")
-    if not path.exists("data"):
+    dir_path = "data"
+    rmtree(dir_path)
+    if not path.exists(dir_path):
         return False
     return True
 
@@ -40,14 +42,14 @@ def create_parquet(data: DataFrame) -> bool:
         logger.error("No data given.")
         return False
     pq.write_to_dataset(datatable, root_path="data/plant",
-                        partition_cols=["year", "month", "day", "plant_id"],
+                        partition_cols=["year", "month", "day"],
                         basename_template="summary-{i}")
     logger.info("Parquet created successfully.")
     return True
 
 
 def get_s3_client() -> client:
-    """Return client to s3 bucket."""
+    """Return client to S3 bucket."""
     logger = getLogger(__name__)
     logger.info("Return S3 client")
     return client("s3",
@@ -56,7 +58,7 @@ def get_s3_client() -> client:
 
 
 def load_to_s3(awsclient: client) -> bool:
-    """Load objects to s3."""
+    """Load objects to S3."""
     logger = getLogger(__name__)
     logger.info("Starting load to S3...")
     has_data = False
@@ -85,7 +87,7 @@ if __name__ == "__main__":
     sample_dataframe = DataFrame({"plant_id": [1, 2, 3],
                                   "name": ["colin", "kevin", "sam"],
                                   "botanist": [1, 2, 1],
-                                 "year": [2000, 2001, 2002],
+                                  "year": [2000, 2001, 2002],
                                   "month": [1, 2, 3],
                                   "day": [1, 2, 3]})
     load_all(sample_dataframe)
