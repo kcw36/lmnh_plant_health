@@ -13,25 +13,12 @@ The long term data solution stores columnar Parquet files in an S3 bucket with t
 LMNH-long-term-plant-storage
 ├── output
 ├── input
-│   ├── image
-│   │   ├── images.parquet
-│   ├── scientific_name
-│   │   ├── scientific_names.parquet
-│   ├── origin
-│   │   ├── origin_locations.parquet
-│   ├── botanist
-│   │   ├── botanists.parquet
 │   ├── plant
 │   │   ├── year=2025/
 │   │   │    ├── month=06/
 │   │   │    │    ├── day=01/
-│   │   │    │    │    ├── plant_id=1/
 │   │   │    │    │    │    └── summary.parquet
-│   │   │    │    │    ├── plant_id=2/
-│   │   │    │    │    │    └── summary.parquet
-│   │   │    │    │    └── plant_id=…/
 │   │   │    │    ├── day=02/
-│   │   │    │    │    ├── plant_id=1/
 │   │   │    │    │    │    └── summary.parquet
 │   │   │    │    │    └── …
 │   │   │    │    └── …
