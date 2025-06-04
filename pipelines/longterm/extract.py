@@ -95,11 +95,11 @@ def get_dict_from_rows(rows: list) -> dict:
     return output_object
 
 
-def get_dataframe_from_dict(object: dict) -> DataFrame:
+def get_dataframe_from_dict(data: dict) -> DataFrame:
     """Return Dataframe from dictionary data."""
     logger = getLogger(__name__)
     logger.info("Converting dictionary to Dataframe...")
-    return DataFrame(object)
+    return DataFrame(data)
 
 
 def truncate_record(conn: Connection):
@@ -107,12 +107,12 @@ def truncate_record(conn: Connection):
     logger = getLogger(__name__)
     logger.info("Removing data from Record table...")
     with conn.cursor() as curs:
-        query = F"TRUNCATE TABLE record;"
+        query = "TRUNCATE TABLE record;"
         curs.execute(query)
         curs.commit()
 
 
-def get_data_from_RDS() -> DataFrame:
+def get_data_from_rds() -> DataFrame:
     """Return data as Dataframe from RDS connection."""
     logger = getLogger(__name__)
     logger.info("Getting data from RDS...")
@@ -126,9 +126,14 @@ def get_data_from_RDS() -> DataFrame:
     return data_df
 
 
-if __name__ == "__main__":
-    load_dotenv()
+def set_logger():
+    """Set logger."""
     logger = getLogger(__name__)
     logger.setLevel(INFO)
     logger.addHandler(StreamHandler(stdout))
-    get_data_from_RDS()
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    set_logger()
+    get_data_from_rds()
