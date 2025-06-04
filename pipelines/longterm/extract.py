@@ -1,7 +1,6 @@
 """Module for extracting from short term storage for use in historic storage."""
 
-from sys import stdout
-from logging import getLogger, INFO, StreamHandler
+from logging import getLogger
 from os import environ as ENV
 
 from dotenv import load_dotenv
@@ -128,14 +127,6 @@ def get_data_from_rds() -> DataFrame:
     return data_df
 
 
-def set_logger():
-    """Set logger."""
-    logger = getLogger(__name__)
-    logger.setLevel(INFO)
-    logger.addHandler(StreamHandler(stdout))
-
-
 if __name__ == "__main__":
     load_dotenv()
-    set_logger()
     get_data_from_rds()
