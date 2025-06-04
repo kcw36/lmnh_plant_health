@@ -3,6 +3,5 @@ pytest
 pyodbc
 pandas
 boto3
-pandas
 python-dotenv
 pyarrow
