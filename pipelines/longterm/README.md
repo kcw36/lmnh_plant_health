@@ -29,6 +29,15 @@
         - `.\.venv\Scripts\activate.bat`
 - Install dependencies
     - `pip install -r requirements.txt`
+## SQL Server Driver
+- ODBC Driver Manager
+    - `brew install unixodbc`
+- ODBC Driver for SQL from Mac
+```bash
+brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+brew update
+HOMEBREW_ACCEPT_EULA=Y brew install msodbcsql18 mssql-tools18
+```
 
 # `.env file`
 
@@ -38,6 +47,7 @@ DB_PORT=<PORT>
 DB_NAME=<NAME_OF_DB>
 DB_PASSWORD=<PASS_FOR_DB>
 DB_USER=<USER_FOR_ACCESSING_DB>
+DB_SCHEMA=<SCHEMA_USED_FOR_DB>
 
 AWS_REGION=<REGION_THAT_RESOURCES_DEPLOY_TO>
 AWS_ACCESS_KEY_ID=<AWS_USER_KEY_IDENTIFIER>
@@ -51,6 +61,7 @@ AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
 ## `pipeline`
 
 ## `extract`
+- Provides utilities for extracting data from a cloud hosted RDS for SQL Server Instance.
 
 ## `transform`
 
