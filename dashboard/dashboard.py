@@ -1,4 +1,4 @@
-"""Simple function"""
+"""Stores dashboard for the project."""
 
 
 def hello_world():
