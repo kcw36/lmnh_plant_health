@@ -1,6 +1,8 @@
 # pylint: skip-file
 """Module for test fixtures in historic pipeline."""
 
+from datetime import datetime
+
 from pytest import fixture
 from pandas import DataFrame
 
@@ -81,9 +83,17 @@ def test_ungrouped_dataframe():
         ],
         "soil_moisture": [35.0, 20.0, 33.0, 15.0, 22.0, 37.0, 30.0],
         "recording_taken": [
-            "2025-06-02 10:00", "2025-05-29 09:30", "2025-06-03 11:15",
-            "2025-06-04 08:45", "2025-05-30 10:10", "2025-06-02 10:30", "2025-06-05 09:00"
+            datetime(2025, 1, 1),
+            datetime(2025, 1, 1),
+            datetime(2025, 1, 1),
+            datetime(2025, 1, 1),
+            datetime(2025, 1, 1),
+            datetime(2025, 1, 1),
+            datetime(2025, 1, 1),
         ],
+        "year": [2025, 2025, 2025, 2025, 2025, 2025, 2025],
+        "month": [1, 1, 1, 1, 1, 1, 1],
+        "day": [1, 1, 1, 1, 1, 1, 1],
         "city": ["Seattle", "Portland", "Seattle", "Phoenix", "Portland", "Seattle", "Miami"],
         "country": ["USA", "USA", "USA", "USA", "USA", "USA", "USA"],
         "botanist": ["Alice", "Bob", "Alice", "Charlie", "Bob", "Alice", "Diana"]
@@ -101,15 +111,14 @@ def test_grouper():
             "2025-06-03", "2025-05-29", "2025-06-01", "2025-06-04"
         ],
         "soil_moisture": [35.0, 20.0, 33.0, 15.0, 22.0, 37.0, 30.0],
-        "recording_taken": [
-            "2025-06-02 10:00", "2025-05-29 09:30", "2025-06-03 11:15",
-            "2025-06-04 08:45", "2025-05-30 10:10", "2025-06-02 10:30", "2025-06-05 09:00"
-        ],
+        "year": [2025, 2025, 2025, 2025, 2025, 2025, 2025],
+        "month": [1, 1, 1, 1, 1, 1, 1],
+        "day": [1, 1, 1, 1, 1, 1, 1],
         "city": ["Seattle", "Portland", "Seattle", "Phoenix", "Portland", "Seattle", "Miami"],
         "country": ["USA", "USA", "USA", "USA", "USA", "USA", "USA"],
         "botanist": ["Alice", "Bob", "Alice", "Charlie", "Bob", "Alice", "Diana"]
     })
-    return sample.groupby(['plant_id', 'plant_name', 'botanist'])
+    return sample.groupby(['plant_id', 'plant_name', 'botanist', 'year', 'month', 'day'])
 
 
 @fixture
@@ -118,6 +127,9 @@ def test_summary_dataframe():
         "plant_id": [1, 2, 3, 4],
         "plant_name": ["Fern", "Bonsai", "Cactus", "Palm"],
         "botanist": ["Alice", "Bob", "Charlie", "Diana"],
+        "year": [2025, 2025, 2025, 2025],
+        "month": [1, 1, 1, 1],
+        "day": [1, 1, 1, 1],
         "temperature_min": [21.5, 18.0, 30.0, 25.0],
         "temperature_median": [22.5, 18.5, 30.0, 25.0],
         "temperature_max": [23.0, 19.0, 30.0, 25.0],

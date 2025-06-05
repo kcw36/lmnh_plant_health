@@ -9,7 +9,7 @@ def get_grouped_data(df: DataFrame) -> DataFrameGroupBy:
     """Return data grouped by key column."""
     logger = getLogger()
     logger.info("Creating group from Dataframe...")
-    return df.groupby(by=['plant_id', 'plant_name', 'botanist'])
+    return df.groupby(by=['plant_id', 'plant_name', 'botanist', 'year', 'month', 'day'])
 
 
 def get_summary_stats(grouping: DataFrameGroupBy) -> DataFrame:
@@ -22,15 +22,27 @@ def get_summary_stats(grouping: DataFrameGroupBy) -> DataFrame:
     summary.columns = ['_'.join(col).strip('_')
                        for col in summary.columns.values]
     summary = summary.rename(columns={"plant_id_count": "count"})
-    summary = summary.reset_index(level=['plant_name', 'botanist'])
+    summary = summary.reset_index(
+        level=['plant_name', 'botanist', 'year', 'month', 'day'])
     return summary
+
+
+def get_time_parts(data: DataFrame) -> DataFrame:
+    """Return dataframe with split time columsn from recording at datetime."""
+    logger = getLogger()
+    logger.info("Getting time parts from recording column...")
+    data['year'] = data['recording_taken'].dt.year
+    data['month'] = data['recording_taken'].dt.month
+    data['day'] = data['recording_taken'].dt.day
+    return data
 
 
 def get_summary_from_df(raw: DataFrame) -> DataFrame:
     """Return summary Dataframe from regular Dataframe."""
     logger = getLogger()
     logger.info("Getting summary stats from raw dataframe...")
-    grouped_df = get_grouped_data(raw)
+    time_df = get_time_parts(raw)
+    grouped_df = get_grouped_data(time_df)
     return get_summary_stats(grouped_df)
 
 
