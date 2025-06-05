@@ -43,16 +43,15 @@ def insert_origin_country(data: DataFrame, conn: Connection):
         country for country in unique_countries if country not in countries_in_db
     ]
 
-    if not countries_to_insert:
+    if countries_to_insert:
+        insert_query = """INSERT INTO origin_country (name) VALUES (?);"""
+        with conn.cursor() as curs:
+            curs.executemany(insert_query, [(country,)
+                                            for country in countries_to_insert])
+            conn.commit()
+            logger.info("Inserted %d new countries.", len(countries_to_insert))
+    else:
         logger.info("No new countries to insert.")
-        return
-
-    insert_query = """INSERT INTO origin_country (name) VALUES (?);"""
-    with conn.cursor() as curs:
-        curs.executemany(insert_query, [(country,)
-                         for country in countries_to_insert])
-        conn.commit()
-        logger.info("Inserted %d new countries.", len(countries_to_insert))
 
 
 def insert_botanist(data: DataFrame, conn: Connection):
@@ -71,15 +70,14 @@ def insert_botanist(data: DataFrame, conn: Connection):
 
     botanist_to_insert = list(unique_botanists - botanist_in_db)
 
-    if not botanist_to_insert:
+    if botanist_to_insert:
+        insert_query = "INSERT INTO botanist (name, email, phone) VALUES (?, ?, ?);"
+        with conn.cursor() as curs:
+            curs.executemany(insert_query, botanist_to_insert)
+            conn.commit()
+            logger.info("Inserted %d new botanists.", len(botanist_to_insert))
+    else:
         logger.info("No new botanists to insert.")
-        return
-
-    insert_query = "INSERT INTO botanist (name, email, phone) VALUES (?, ?, ?);"
-    with conn.cursor() as curs:
-        curs.executemany(insert_query, botanist_to_insert)
-        conn.commit()
-        logger.info("Inserted %d new botanists.", len(botanist_to_insert))
 
 
 def insert_origin_city(data: DataFrame, conn: Connection):
@@ -110,15 +108,14 @@ def insert_origin_city(data: DataFrame, conn: Connection):
 
     cities_to_insert = list(unique_cities - cities_in_db)
 
-    if not cities_to_insert:
+    if cities_to_insert:
+        insert_query = "INSERT INTO origin_city (name, country_id) VALUES (?, ?)"
+        with conn.cursor() as curs:
+            curs.executemany(insert_query, cities_to_insert)
+            conn.commit()
+            logger.info("Inserted %d new cities.", len(cities_to_insert))
+    else:
         logger.info("No new cities to insert.")
-        return
-
-    insert_query = "INSERT INTO origin_city (name, country_id) VALUES (?, ?)"
-    with conn.cursor() as curs:
-        curs.executemany(insert_query, cities_to_insert)
-        conn.commit()
-        logger.info("Inserted %d new cities.", len(cities_to_insert))
 
 
 def insert_plant(data: DataFrame, conn: Connection):
@@ -155,15 +152,14 @@ def insert_plant(data: DataFrame, conn: Connection):
     plants_to_insert = list(plants_to_insert[["plant_id", "name", "city_id"]].itertuples(
         index=False, name=None))
 
-    if not plants_to_insert:
+    if plants_to_insert:
+        insert_query = "INSERT INTO plant (plant_id, name, city_id) VALUES (?, ?, ?)"
+        with conn.cursor() as curs:
+            curs.executemany(insert_query, plants_to_insert)
+            conn.commit()
+            logger.info("Inserted %d new plants.", len(plants_to_insert))
+    else:
         logger.info("No new plants to insert.")
-        return
-
-    insert_query = "INSERT INTO plant (plant_id, name, city_id) VALUES (?, ?, ?)"
-    with conn.cursor() as curs:
-        curs.executemany(insert_query, plants_to_insert)
-        conn.commit()
-        logger.info("Inserted %d new plants.", len(plants_to_insert))
 
 
 def insert_botanist_plant(data: DataFrame, conn: Connection):
@@ -191,16 +187,15 @@ def insert_botanist_plant(data: DataFrame, conn: Connection):
         if (int(row.plant_id), int(row.botanist_id)) not in botanist_plant_in_db
     ]
 
-    if not botanist_plant_to_insert:
+    if botanist_plant_to_insert:
+        insert_query = "INSERT INTO botanist_plant (plant_id, botanist_id) VALUES (?, ?)"
+        with conn.cursor() as curs:
+            curs.executemany(insert_query, botanist_plant_to_insert)
+            conn.commit()
+            logger.info("Inserted %d new botanist_plant records.",
+                        len(botanist_plant_to_insert))
+    else:
         logger.info("No new botanist_plant records to insert.")
-        return
-
-    insert_query = "INSERT INTO botanist_plant (plant_id, botanist_id) VALUES (?, ?)"
-    with conn.cursor() as curs:
-        curs.executemany(insert_query, botanist_plant_to_insert)
-        conn.commit()
-        logger.info("Inserted %d new botanist_plant records.",
-                    len(botanist_plant_to_insert))
 
 
 def insert_record(data: DataFrame, conn: Connection):
@@ -231,18 +226,17 @@ def insert_record(data: DataFrame, conn: Connection):
         for row in records.itertuples(index=False)
     ]
 
-    if not records_to_insert:
+    if records_to_insert:
+        insert_query = """
+            INSERT INTO record (temperature, last_watered, soil_moisture, recording_taken, plant_id)
+            VALUES (?, ?, ?, ?, ?)
+        """
+        with conn.cursor() as curs:
+            curs.executemany(insert_query, records_to_insert)
+            conn.commit()
+            logger.info("Inserted %d new records.", len(records_to_insert))
+    else:
         logger.info("No new records to insert.")
-        return
-
-    insert_query = """
-        INSERT INTO record (temperature, last_watered, soil_moisture, recording_taken, plant_id)
-        VALUES (?, ?, ?, ?, ?)
-    """
-    with conn.cursor() as curs:
-        curs.executemany(insert_query, records_to_insert)
-        conn.commit()
-        logger.info("Inserted %d new records.", len(records_to_insert))
 
 
 def load_data(data: DataFrame, conn: Connection):
