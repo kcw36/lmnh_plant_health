@@ -24,8 +24,8 @@ def run():
 
     data = get_data_from_rds()
     if data.empty:
-        raise ValueError("Recieved no data from RDS.")
-    logger.info("Successfully recieved data from RDS!")
+        raise ValueError("Received no data from RDS.")
+    logger.info("Successfully received data from RDS!")
 
     summary = get_summary_from_df(data)
     if summary.empty:
