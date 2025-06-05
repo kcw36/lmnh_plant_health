@@ -9,79 +9,57 @@ DROP TABLE IF EXISTS plant;
 GO
 DROP TABLE IF EXISTS botanist;
 GO
-DROP TABLE IF EXISTS image;
-GO
-DROP TABLE IF EXISTS species;
-GO
 DROP TABLE IF EXISTS origin_city;
 GO
 DROP TABLE IF EXISTS origin_country;
 GO
 
 CREATE TABLE origin_country (
-    country_id BIGINT PRIMARY KEY,
+    country_id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
 GO
 
 CREATE TABLE botanist (
-    botanist_id SMALLINT PRIMARY KEY,
+    botanist_id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(50) NOT NULL
 );
 GO
 
-CREATE TABLE species (
-    species_id BIGINT PRIMARY KEY,
-    scientific_name VARCHAR(255) NOT NULL
-);
-GO
-
-CREATE TABLE image (
-    image_id SMALLINT PRIMARY KEY,
-    original_url TEXT NOT NULL
-);
-GO
-
 CREATE TABLE origin_city (
-    city_id BIGINT PRIMARY KEY,
+    city_id INT IDENTITY(1,1) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    country_id BIGINT NOT NULL,
+    country_id INT NOT NULL,
     FOREIGN KEY (country_id) REFERENCES origin_country(country_id)
 );
 GO
 
 CREATE TABLE plant (
-    plant_id BIGINT PRIMARY KEY,
+    plant_id INT PRIMARY KEY,  -- Manual input
     name VARCHAR(255) NOT NULL,
-    city_id BIGINT NOT NULL,
-    botanist_id SMALLINT NOT NULL,
-    image_id SMALLINT,
-    species_id BIGINT NOT NULL,
-    FOREIGN KEY (city_id) REFERENCES origin_city(city_id),
-    FOREIGN KEY (botanist_id) REFERENCES botanist(botanist_id),
-    FOREIGN KEY (image_id) REFERENCES image(image_id),
-    FOREIGN KEY (species_id) REFERENCES species(species_id)
+    city_id INT NOT NULL,
+    FOREIGN KEY (city_id) REFERENCES origin_city(city_id)
 );
 GO
 
 CREATE TABLE botanist_plant (
-    botanist_plant_id BIGINT PRIMARY KEY,
-    plant_id BIGINT NOT NULL,
-    botanist_id SMALLINT NOT NULL,
+    botanist_plant_id INT IDENTITY(1,1) PRIMARY KEY,
+    plant_id INT NOT NULL,
+    botanist_id INT NOT NULL,
     FOREIGN KEY (plant_id) REFERENCES plant(plant_id),
     FOREIGN KEY (botanist_id) REFERENCES botanist(botanist_id)
 );
 GO
 
 CREATE TABLE record (
-    record_id BIGINT PRIMARY KEY,
-    temperature BIGINT,
-    last_watered DATETIME,
-    soil_moisture BIGINT,
-    recording_taken DATETIME,
-    plant_id BIGINT NOT NULL,
+    record_id INT IDENTITY(1,1) PRIMARY KEY,
+    temperature FLOAT,
+    last_watered TIMESTAMP,
+    soil_moisture FLOAT,
+    recording_taken TIMESTAMP,
+    plant_id INT NOT NULL,
     FOREIGN KEY (plant_id) REFERENCES plant(plant_id)
 );
 GO
