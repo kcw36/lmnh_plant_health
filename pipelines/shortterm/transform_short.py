@@ -1,9 +1,10 @@
 """Script to clean the raw plant data."""
 import pandas as pd
+from pandas import DataFrame
 from extract_short import fetch_all_plants
 
 
-def extract_nested_columns(raw_plants: pd.DataFrame) -> pd.DataFrame:
+def extract_nested_columns(raw_plants: DataFrame) -> DataFrame:
     """Extracts the necessary data from the columns containing dictionaries."""
 
     raw_plants_df = raw_plants.copy()
@@ -20,7 +21,7 @@ def extract_nested_columns(raw_plants: pd.DataFrame) -> pd.DataFrame:
     return raw_plants_df
 
 
-def drop_irrelevant_columns(plants_df: pd.DataFrame) -> pd.DataFrame:
+def drop_irrelevant_columns(plants_df: DataFrame) -> DataFrame:
     """Removes unnecessary columns that aren't needed for loading."""
     columns_to_drop = ['origin_location',
                        'botanist', 'images', 'scientific_name']
@@ -28,7 +29,7 @@ def drop_irrelevant_columns(plants_df: pd.DataFrame) -> pd.DataFrame:
     return plants_df.drop(columns=columns_to_drop)
 
 
-def validate_string_cols(plants_df: pd.DataFrame) -> pd.DataFrame:
+def validate_string_cols(plants_df: DataFrame) -> DataFrame:
     """Ensures relevant columns are clean strings."""
 
     plants_df['origin_city'] = plants_df['origin_city'].astype(str)
@@ -39,7 +40,7 @@ def validate_string_cols(plants_df: pd.DataFrame) -> pd.DataFrame:
     return plants_df
 
 
-def validate_numeric_cols(plants_df: pd.DataFrame) -> pd.DataFrame:
+def validate_numeric_cols(plants_df: DataFrame) -> DataFrame:
     """Ensures numeric columns are valid numbers."""
 
     plants_df['temperature'] = pd.to_numeric(
@@ -50,7 +51,7 @@ def validate_numeric_cols(plants_df: pd.DataFrame) -> pd.DataFrame:
     return plants_df
 
 
-def validate_datetime_cols(plants_df: pd.DataFrame) -> pd.DataFrame:
+def validate_datetime_cols(plants_df: DataFrame) -> DataFrame:
     """Converts columns to proper datetime format."""
 
     plants_df['last_watered'] = pd.to_datetime(
@@ -61,7 +62,7 @@ def validate_datetime_cols(plants_df: pd.DataFrame) -> pd.DataFrame:
     return plants_df
 
 
-def clean_phone_nos(plants_df: pd.DataFrame) -> pd.DataFrame:
+def clean_phone_nos(plants_df: DataFrame) -> DataFrame:
     """Cleans phone numbers to be compatible with AWS SNS E.164 format."""
 
     cleaned_phone_nos = []
@@ -88,7 +89,7 @@ def clean_phone_nos(plants_df: pd.DataFrame) -> pd.DataFrame:
     return plants_df
 
 
-def clean_df(plants_df: pd.DataFrame) -> pd.DataFrame:
+def clean_df(plants_df: DataFrame) -> DataFrame:
     """Transforms and cleans dataframe to match target schema, 
     filling NaN values with empty strings."""
 
@@ -106,7 +107,7 @@ def clean_df(plants_df: pd.DataFrame) -> pd.DataFrame:
     return clean_df
 
 
-def transform_data() -> pd.DataFrame:
+def transform_data() -> DataFrame:
     """Runs the transformation phase of the pipeline."""
 
     raw_plants_df = fetch_all_plants()
@@ -120,6 +121,4 @@ def transform_data() -> pd.DataFrame:
 if __name__ == "__main__":
 
     clean_plants = transform_data()
-
     clean_plants.to_csv("clean_plants.csv", index=False)
-    # save_to_csv(clean_plants, "clean_plants.csv")
