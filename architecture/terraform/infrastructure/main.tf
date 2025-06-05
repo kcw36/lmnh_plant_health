@@ -219,7 +219,7 @@ resource "aws_ecs_task_definition" "task" {
     cpu = 1024
     container_definitions = jsonencode([{
         name = "dashboard"
-        image = "c17-cattus-dashboard-ecr:latest"
+        image = "129033205317.dkr.ecr.eu-west-2.amazonaws.com/c17-cattus-dashboard-ecr:latest"
         cpu = 1024
         essential = true
         environment = [
