@@ -50,7 +50,7 @@ def insert_origin_country(data: DataFrame, conn: Connection):
         curs.executemany(insert_query, [(country,)
                          for country in countries_to_insert])
         conn.commit()
-        logger.info(f"Inserted {len(countries_to_insert)} new countries.")
+        logger.info("Inserted %d new countries.", len(countries_to_insert))
 
 
 def insert_botanist(data: DataFrame, conn: Connection):
@@ -77,7 +77,7 @@ def insert_botanist(data: DataFrame, conn: Connection):
     with conn.cursor() as curs:
         curs.executemany(insert_query, botanist_to_insert)
         conn.commit()
-        logger.info(f"Inserted {len(botanist_to_insert)} new botanists.")
+        logger.info("Inserted %d new botanists.", len(botanist_to_insert))
 
 
 def insert_origin_city(data: DataFrame, conn: Connection):
@@ -114,7 +114,7 @@ def insert_origin_city(data: DataFrame, conn: Connection):
     with conn.cursor() as curs:
         curs.executemany(insert_query, cities_to_insert)
         conn.commit()
-        logger.info(f"Inserted {len(cities_to_insert)} new cities.")
+        logger.info("Inserted %d new cities.", len(cities_to_insert))
 
 
 def insert_plant(data: DataFrame, conn: Connection):
@@ -162,7 +162,7 @@ def insert_plant(data: DataFrame, conn: Connection):
     with conn.cursor() as curs:
         curs.executemany(insert_query, plants_to_insert)
         conn.commit()
-        logger.info(f"Inserted {len(plants_to_insert)} new plants.")
+        logger.info("Inserted %d new plants.", len(plants_to_insert))
 
 
 def insert_botanist_plant(data: DataFrame, conn: Connection):
@@ -171,44 +171,108 @@ def insert_botanist_plant(data: DataFrame, conn: Connection):
     logger.info("Inserting into botanist_plant...")
 
     botanist_id_email_query = "SELECT botanist_id, email FROM botanist"
-    plant_id_query = "SELECT plant_id FROM plant"
-    botanist_plant_query = "SELECT plant_id, botanist_id FROM botanist_plant"
-
     botanist_id_email = pd.read_sql(botanist_id_email_query, conn)
     botanist_id_email = dict(
         zip(botanist_id_email["email"], botanist_id_email["botanist_id"]))
 
-    plant_id = pd.read_sql(plant_id_query, conn)["plant_id"].to_list()
+    botanist_plant_query = "SELECT plant_id, botanist_id FROM botanist_plant"
+    botanist_plant_in_db = pd.read_sql(botanist_plant_query, conn)
+    botanist_plant_in_db = set(tuple(x)
+                               for x in botanist_plant_in_db.to_numpy())
 
     botanist_plants = data[["plant_id", "botanist_email"]].drop_duplicates()
     botanist_plants["botanist_id"] = botanist_plants["botanist_email"].map(
         botanist_id_email)
 
-    botanist_plant_in_db = pd.read_sql(botanist_plant_query, conn)
+    botanist_plant_to_insert = [
+        (int(row.plant_id), int(row.botanist_id))
+        for row in botanist_plants.itertuples(index=False)
+        if (int(row.plant_id), int(row.botanist_id)) not in botanist_plant_in_db
+    ]
 
-    print(botanist_plant_in_db)
+    if not botanist_plant_to_insert:
+        logger.info("No new botanist_plant records to insert.")
+        return
+
+    insert_query = "INSERT INTO botanist_plant (plant_id, botanist_id) VALUES (?, ?)"
+    with conn.cursor() as curs:
+        curs.executemany(insert_query, botanist_plant_to_insert)
+        conn.commit()
+        logger.info("Inserted %d new botanist_plant records.",
+                    len(botanist_plant_to_insert))
 
 
-def insert_record(data: DataFrame):
+def insert_record(data: DataFrame, conn: Connection):
     """Insert data into `record` table."""
     logger = getLogger(__name__)
     logger.info("Inserting into record...")
-    pass
+
+    records = data[[
+        "temperature",
+        "last_watered",
+        "soil_moisture",
+        "recording_taken",
+        "plant_id"
+    ]].drop_duplicates()
+
+    records["last_watered"] = pd.to_datetime(records["last_watered"], utc=True)
+    records["recording_taken"] = pd.to_datetime(
+        records["recording_taken"], utc=True)
+
+    records_to_insert = [
+        (
+            float(row.temperature),
+            row.last_watered,
+            float(row.soil_moisture),
+            row.recording_taken,
+            int(row.plant_id)
+        )
+        for row in records.itertuples(index=False)
+    ]
+
+    if not records_to_insert:
+        logger.info("No new records to insert.")
+        return
+
+    insert_query = """
+        INSERT INTO record (temperature, last_watered, soil_moisture, recording_taken, plant_id)
+        VALUES (?, ?, ?, ?, ?)
+    """
+
+    with conn.cursor() as curs:
+        curs.executemany(insert_query, records_to_insert)
+        conn.commit()
+        logger.info("Inserted %d new records.", len(records_to_insert))
+
+
+def load_data(data: DataFrame, conn: Connection):
+    """Load all plant data to the database in correct order."""
+    logger = getLogger(__name__)
+    logger.info("Starting data load pipeline...")
+
+    insert_origin_country(data, conn)
+    insert_origin_city(data, conn)
+    insert_botanist(data, conn)
+    insert_plant(data, conn)
+    insert_botanist_plant(data, conn)
+    insert_record(data, conn)
+
+    logger.info("Data load pipeline completed successfully.")
 
 
 if __name__ == "__main__":
     load_dotenv()
 
-    data = [
+    plants_data = [
         {
             'plant_id': 1,
             'name': 'Venus flytrap',
             'origin_city': 'Stammside',
             'origin_country': 'Albania',
             'temperature': 13.77,
-            'last_watered': '2025-06-04 13:51:41+00:00',
+            'last_watered': '2025-06-04 13:51:41.000000+00:00',
             'soil_moisture': 92.33,
-            'recording_taken': '2025-06-04 16:10:03.580000+00:00',
+            'recording_taken': '2025-06-04 16:10:03.000000+00:00',
             'botanist_name': 'Kenneth Buckridge',
             'botanist_email': 'kenneth.buckridge@lnhm.co.uk',
             'botanist_phone': '+7639148635'
@@ -219,7 +283,7 @@ if __name__ == "__main__":
             'origin_city': 'Willowtown',
             'origin_country': 'Canada',
             'temperature': 18.21,
-            'last_watered': '2025-06-03 09:14:12+00:00',
+            'last_watered': '2025-06-03 09:14:12.000000+00:00',
             'soil_moisture': 88.9,
             'recording_taken': '2025-06-03 09:15:00.000000+00:00',
             'botanist_name': 'Dr. Alice Greene',
@@ -232,21 +296,80 @@ if __name__ == "__main__":
             'origin_city': 'Rainford',
             'origin_country': 'Malaysia',
             'temperature': 27.45,
-            'last_watered': '2025-06-01 18:20:05+00:00',
+            'last_watered': '2025-06-01 18:20:05.000000+00:00',
             'soil_moisture': 73.5,
-            'recording_taken': '2025-06-01 18:25:10.100000+00:00',
+            'recording_taken': '2025-06-01 18:25:10.000000+00:00',
             'botanist_name': 'Carlos Rivera',
             'botanist_email': 'carlos.rivera@lnhm.co.uk',
             'botanist_phone': '+6038291010'
+        },
+        {
+            'plant_id': 4,
+            'name': 'Bladderwort',
+            'origin_city': 'Stammside',
+            'origin_country': 'Albania',
+            'temperature': 14.5,
+            'last_watered': '2025-06-02 12:00:00.000000+00:00',
+            'soil_moisture': 80.1,
+            'recording_taken': '2025-06-02 12:15:00.000000+00:00',
+            'botanist_name': 'Kenneth Buckridge',
+            'botanist_email': 'kenneth.buckridge@lnhm.co.uk',
+            'botanist_phone': '+7639148635'
+        },
+        {
+            'plant_id': 5,
+            'name': 'Butterwort',
+            'origin_city': 'Willowtown',
+            'origin_country': 'Canada',
+            'temperature': 16.9,
+            'last_watered': '2025-06-03 14:22:30.000000+00:00',
+            'soil_moisture': 85.0,
+            'recording_taken': '2025-06-03 14:30:00.000000+00:00',
+            'botanist_name': 'Dr. Alice Greene',
+            'botanist_email': 'alice.greene@lnhm.co.uk',
+            'botanist_phone': '+1445982713'
+        },
+        {
+            'plant_id': 6,
+            'name': 'Waterwheel plant',
+            'origin_city': 'Ipoh',
+            'origin_country': 'Malaysia',
+            'temperature': 26.3,
+            'last_watered': '2025-06-01 08:10:45.000000+00:00',
+            'soil_moisture': 78.2,
+            'recording_taken': '2025-06-01 08:15:00.000000+00:00',
+            'botanist_name': 'Carlos Rivera',
+            'botanist_email': 'carlos.rivera@lnhm.co.uk',
+            'botanist_phone': '+6038291010'
+        },
+        {
+            'plant_id': 7,
+            'name': 'Cobra lily',
+            'origin_city': 'Fern Hollow',
+            'origin_country': 'USA',
+            'temperature': 19.0,
+            'last_watered': '2025-06-04 07:45:00.000000+00:00',
+            'soil_moisture': 90.0,
+            'recording_taken': '2025-06-04 08:00:00.000000+00:00',
+            'botanist_name': 'Maria Thompson',
+            'botanist_email': 'maria.thompson@lnhm.co.uk',
+            'botanist_phone': '+1234567890'
+        },
+        {
+            'plant_id': 8,
+            'name': 'Australian pitcher plant',
+            'origin_city': 'Perth',
+            'origin_country': 'Australia',
+            'temperature': 22.5,
+            'last_watered': '2025-06-02 10:30:00.000000+00:00',
+            'soil_moisture': 83.5,
+            'recording_taken': '2025-06-02 10:45:00.000000+00:00',
+            'botanist_name': 'Dr. Alice Greene',
+            'botanist_email': 'alice.greene@lnhm.co.uk',
+            'botanist_phone': '+1445982713'
         }
     ]
 
-    data = pd.DataFrame(data)
-
-    print(data)
-    with get_connection() as conn:
-        # insert_origin_country(data, conn)
-        # insert_botanist(data, conn)
-        # insert_origin_city(data, conn)
-        #  insert_plant(data, conn)
-        insert_botanist_plant(data, conn)
+    plants_data = pd.DataFrame(plants_data)
+    with get_connection() as db_connection:
+        load_data(plants_data, db_connection)
