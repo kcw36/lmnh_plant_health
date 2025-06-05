@@ -3,4 +3,7 @@ requests
 requests_mock
 pandas
 pytest
+python-dotenv
+pyodbc
 pylint
+

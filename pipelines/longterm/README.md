@@ -54,11 +54,17 @@ AWS_ACCESS_KEY_ID=<AWS_USER_KEY_IDENTIFIER>
 AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
 ```
 
+# Running the Historic Pipeline
+- From the `pipelines/longterm` directory
+- Run `python3 pipeline.py`
+
 # Modules
 
 <b> All files should be ran from the module directory `/pipelines/longterm/` </b>
 
 ## `pipeline`
+- Script for running the full etl pipeline from RDS to S3.
+- Contains a lambda handler for dockerisation with a lambda layer
 
 ## `extract`
 - Provides utilities for extracting data from a cloud hosted RDS for SQL Server Instance.
