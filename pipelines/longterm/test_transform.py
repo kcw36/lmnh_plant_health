@@ -1,6 +1,6 @@
 # pylint: skip-file
 
-"""Module for testing trasnform methods."""
+"""Module for testing transform methods."""
 
 from pandas.api.typing import DataFrameGroupBy
 from pandas import DataFrame
@@ -25,4 +25,9 @@ def test_get_summary_stats(test_grouper, test_summary_dataframe):
 def test_get_summary_from_df(test_ungrouped_dataframe, test_summary_dataframe):
     """Test get summary from df returns grouped Dataframe from raw Dataframe."""
     actual = get_summary_from_df(test_ungrouped_dataframe)
+    test_summary_dataframe = test_summary_dataframe.astype({
+        "year": "int32",
+        "month": "int32",
+        "day": "int32"
+    })
     assert actual.equals(test_summary_dataframe)
