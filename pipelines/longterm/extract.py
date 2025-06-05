@@ -1,7 +1,6 @@
 """Module for extracting from short term storage for use in historic storage."""
 
-from sys import stdout
-from logging import getLogger, INFO, StreamHandler
+from logging import getLogger
 from os import environ as ENV
 
 from dotenv import load_dotenv
@@ -11,7 +10,7 @@ from pyodbc import connect, Connection
 
 def get_connection():
     """Return database connection."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Getting RDS connection...")
     connection_string = f"""
                             DRIVER={{ODBC Driver 18 for SQL Server}};
@@ -28,7 +27,7 @@ def get_connection():
 
 def get_full_data(conn: Connection, schema: str) -> list:
     """Return row data from full sql query."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Send SELECT query to RDS...")
     with conn.cursor() as curs:
         query = f"""SELECT p.plant_id, p.name,
@@ -54,7 +53,7 @@ def get_full_data(conn: Connection, schema: str) -> list:
 
 def get_dict_from_rows(rows: list) -> dict:
     """Return dictionary from row data."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Converting rows to dictionary...")
     output_object = {
         "plant_id": [],
@@ -86,14 +85,14 @@ def get_dict_from_rows(rows: list) -> dict:
 
 def get_dataframe_from_dict(data: dict) -> DataFrame:
     """Return Dataframe from dictionary data."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Converting dictionary to Dataframe...")
     return DataFrame.from_dict(data)
 
 
 def truncate_record(conn: Connection, schema: str):
     """Remove data from records table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Removing data from Record table...")
     with conn.cursor() as curs:
         query = f"TRUNCATE TABLE {schema}.record;"
@@ -103,7 +102,7 @@ def truncate_record(conn: Connection, schema: str):
 
 def get_schema() -> str:
     """Return schema name from environment."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Checking schema is valid...")
     schema = ENV["DB_SCHEMA"]
     if not schema.isidentifier():
@@ -113,7 +112,7 @@ def get_schema() -> str:
 
 def get_data_from_rds() -> DataFrame:
     """Return data as Dataframe from RDS connection."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Getting data from RDS...")
     rds_conn = get_connection()
     target_schema = get_schema()
@@ -128,14 +127,6 @@ def get_data_from_rds() -> DataFrame:
     return data_df
 
 
-def set_logger():
-    """Set logger."""
-    logger = getLogger(__name__)
-    logger.setLevel(INFO)
-    logger.addHandler(StreamHandler(stdout))
-
-
 if __name__ == "__main__":
     load_dotenv()
-    set_logger()
     get_data_from_rds()
