@@ -1,29 +1,26 @@
+# pylint: disable=no-self-argument
 """Calculates the statistics and data used in the dashboard and visualisations."""
 from os import environ as ENV
-from datetime import datetime, timedelta
+from datetime import datetime
 from logging import getLogger, INFO, StreamHandler
 from sys import stdout
+from warnings import filterwarnings
 
-from dotenv import load_dotenv
 from pyodbc import connect, Connection
 import pandas as pd
 import numpy as np
 import streamlit as st
 
 
-class DatabaseManager:
+class DatabaseFunctions:
     """Manages database connections and queries for the plant monitoring system."""
 
     def __init__(self, config: dict):
         """Initialise database manager with configuration."""
         self.config = config
         self.logger = getLogger(__name__)
-
-    def set_logger():
-        """Set logger."""
-        logger = getLogger(__name__)
-        logger.setLevel(INFO)
-        logger.addHandler(StreamHandler(stdout))
+        self.logger.setLevel(INFO)
+        self.logger.addHandler(StreamHandler(stdout))
 
     def get_connection(self) -> Connection:
         """Return a database connection."""
@@ -42,6 +39,8 @@ class DatabaseManager:
 
     def execute_query(self, query: str, params: tuple[str] = None) -> pd.DataFrame:
         """Execute SQL query and return results as DataFrame."""
+        filterwarnings(
+            'ignore', message='pandas only supports SQLAlchemy connectable')
         with self.get_connection() as conn:
             return pd.read_sql(query, conn, params=params)
 
@@ -49,11 +48,11 @@ class DatabaseManager:
 class PlantDataProcessor:
     """Processes plant monitoring data and performs statistical calculations."""
 
-    def __init__(self, db_manager: DatabaseManager):
-        """Initialize data processor with database manager."""
+    def __init__(self, db_manager: DatabaseFunctions):
+        """Initialise data processor with database manager."""
         self.db_manager = db_manager
 
-    @st.cache_data()
+    @st.cache_data
     def get_total_plants(_self) -> int:
         """Get total number of plants in the system."""
 
@@ -72,7 +71,7 @@ class PlantDataProcessor:
         result = _self.db_manager.execute_query(query)
         return int(result.iloc[0]['active_botanists'])
 
-    @st.cache_data(ttl=60)
+    @st.cache_data(ttl=300)
     def get_latest_readings(_self) -> pd.DataFrame:
         """Get the latest readings for each plant."""
 
@@ -95,9 +94,9 @@ class PlantDataProcessor:
             c.name as city_name,
             co.name as country_name
         FROM LatestReadings lr
-        JOIN plant p USING(plant_id)
-        JOIN origin_city c USING(city_id)
-        JOIN origin_country co USING(country_id)
+        JOIN plant p ON lr.plant_id = p.plant_id
+        JOIN origin_city c ON p.city_id = c.city_id
+        JOIN origin_country co ON c.country_id = co.country_id
         WHERE lr.record = 1
         """
         return _self.db_manager.execute_query(query)
@@ -111,45 +110,59 @@ class PlantDataProcessor:
             'avg_soil_moisture': float(latest_readings['soil_moisture'].median())
         }
 
-    def identify_critical_plants(self) -> pd.DataFrame:
-        """Identify plants with critical issues (extreme readings or stale data)."""
-        latest_readings = self.get_latest_readings()
+    @st.cache_data(ttl=60)
+    def identify_critical_plants(_self) -> pd.DataFrame:
+        """Identify plants with critical issues using efficient vectorized operations."""
+        latest_readings = _self.get_latest_readings()
+        if latest_readings.empty:
+            return pd.DataFrame()
+
+        temp_outliers = StatisticsCalculator.detect_outliers(
+            latest_readings['temperature'])
+        moisture_outliers = StatisticsCalculator.detect_outliers(
+            latest_readings['soil_moisture'])
         current_time = datetime.now()
-        critical_plants = []
+        time_diffs = (
+            current_time - pd.to_datetime(
+                latest_readings['recording_taken'])).dt.total_seconds() / 3600
+        stale_data = time_diffs > 2
 
-        temp_median = latest_readings['temperature'].median()
-        temp_std = latest_readings['temperature'].std()
-        moisture_median = latest_readings['soil_moisture'].median()
-        moisture_std = latest_readings['soil_moisture'].std()
+        issues_df = pd.DataFrame({
+            'plant_id': latest_readings['plant_id'],
+            'plant_name': latest_readings['plant_name'],
+            'recording_taken': latest_readings['recording_taken'],
+            'temperature': latest_readings['temperature'],
+            'soil_moisture': latest_readings['soil_moisture'],
+            'is_temp_issue': temp_outliers,
+            'is_moisture_issue': moisture_outliers,
+            'is_stale': stale_data,
+            'time_diff_hr': time_diffs
+        })
 
-        for _, plant in latest_readings.iterrows():
-            issues = []
+        issue_rows = issues_df[
+            issues_df['is_temp_issue'] |
+            issues_df['is_moisture_issue'] |
+            issues_df['is_stale']
+        ]
 
-            temp_z_score = abs(plant['temperature'] - temp_median) / temp_std
-            if temp_z_score > 3:
-                issues.append(
-                    f"Extreme temperature: {plant['temperature']:.1f}°C")
+        if issue_rows.empty:
+            return pd.DataFrame()
 
-            moisture_z_score = abs(
-                plant['soil_moisture'] - moisture_median) / moisture_std
-            if moisture_z_score > 3:
-                issues.append(
-                    f"Extreme moisture: {plant['soil_moisture']:.1f}%")
+        issue_messages = (
+            issue_rows['is_temp_issue'].map(
+                lambda x: f"Extreme temperature: {x:.1f}°C" if x else "0.0°C") +
+            issue_rows['is_moisture_issue'].map(
+                lambda x: f"; Extreme moisture: {x:.1f}%" if x else "0.0%") +
+            issue_rows['is_stale'].map(
+                lambda x: f"; Stale reading: {x:.1f} hours old" if x else "0.0 hours old")
+        )
 
-            time_diff = current_time - plant['recording_taken']
-            if time_diff > timedelta(hours=2):
-                hours_old = time_diff.total_seconds() / 3600
-                issues.append(f"Stale reading: {hours_old:.1f} hours old")
-
-            if issues:
-                critical_plants.append({
-                    'plant_id': plant['plant_id'],
-                    'plant_name': plant['plant_name'],
-                    'issues': '; '.join(issues),
-                    'last_reading': plant['recording_taken']
-                })
-
-        return pd.DataFrame(critical_plants)
+        return pd.DataFrame({
+            'plant_id': issue_rows['plant_id'].values,
+            'plant_name': issue_rows['plant_name'].values,
+            'issues': issue_messages.values,
+            'last_reading': issue_rows['recording_taken'].values
+        })
 
     @st.cache_data(ttl=300)
     def get_plants_with_least_readings(_self, limit: int = 5) -> pd.DataFrame:
@@ -162,7 +175,7 @@ class PlantDataProcessor:
         FROM plant p
         LEFT JOIN record r ON p.plant_id = r.plant_id
         GROUP BY p.plant_id, p.name
-        ORDER BY reading_count ASC
+        ORDER BY reading_count
         """
         return _self.db_manager.execute_query(query, (limit,))
 
@@ -197,7 +210,8 @@ class PlantDataProcessor:
         query = "SELECT DISTINCT name FROM plant ORDER BY name"
         return _self.db_manager.execute_query(query)
 
-    def get_filtered_data(self, botanist_id: int = None,
+    @st.cache_data(ttl=300)
+    def get_filtered_data(_self, botanist_id: int = None,
                           plant_species: str = None) -> pd.DataFrame:
         """Get filtered plant data based on botanist and/or plant species."""
 
@@ -212,7 +226,7 @@ class PlantDataProcessor:
         params = []
 
         if botanist_id:
-            base_query += " JOIN botanist_plant bp USING(plant_id)"
+            base_query += " JOIN botanist_plant bp ON p.plant_id = bp.plant_id"
             conditions.append("bp.botanist_id = ?")
             params.append(botanist_id)
 
@@ -225,13 +239,14 @@ class PlantDataProcessor:
 
         base_query += " ORDER BY p.name"
 
-        return self.db_manager.execute_query(base_query, tuple(params) if params else None)
+        return _self.db_manager.execute_query(base_query, tuple(params) if params else None)
 
 
 class StatisticsCalculator:
     """Handles statistical calculations and data aggregations."""
 
     @staticmethod
+    @st.cache_data(ttl=60)
     def calculate_hourly_averages(data: pd.DataFrame,
                                   metric_column: str,
                                   time_column: str = 'recording_taken',
@@ -243,26 +258,12 @@ class StatisticsCalculator:
         data = data.copy()
 
         data[time_column] = pd.to_datetime(data[time_column])
-        data['hour'] = data[time_column].dt.floor('H')
+        data['hour'] = data[time_column].dt.floor('h')
 
-        hourly_avg = data.groupby([group_column, 'hour'])[
-            metric_column].mean().reset_index()
-        return hourly_avg
+        return data.groupby([group_column, 'hour'])[metric_column].mean().reset_index()
 
     @staticmethod
-    def detect_outliers(series: pd.Series, method: str = 'iqr') -> pd.Series:
+    def detect_outliers(series: pd.Series) -> pd.Series:
         """Detect outliers in a pandas Series."""
-        if method == 'iqr':
-            Q1 = series.quantile(0.25)
-            Q3 = series.quantile(0.75)
-            IQR = Q3 - Q1
-            lower_bound = Q1 - 1.5 * IQR
-            upper_bound = Q3 + 1.5 * IQR
-            return (series < lower_bound) | (series > upper_bound)
-
-        elif method == 'zscore':
-            z_scores = np.abs((series - series.mean()) / series.std())
-            return z_scores > 3
-
-        else:
-            raise ValueError("Method must be 'iqr' or 'zscore'")
+        z_scores = np.abs((series - series.median()) / series.std())
+        return z_scores > 3
