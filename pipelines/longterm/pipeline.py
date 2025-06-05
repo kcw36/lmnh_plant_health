@@ -38,10 +38,10 @@ def run():
 
 def lambda_handler(event, context):
     """
-    Main Lambda Handler Function
+    Main Lambda Handler Function.
     Parameters:
         event: Dict containing the lambda function event data
-        context: lAMBDA RUNTIME CONTEXT
+        context: LAMBDA RUNTIME CONTEXT
     Returns:
         Dict containing status message
     """
