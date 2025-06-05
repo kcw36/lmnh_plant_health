@@ -55,7 +55,7 @@ data "aws_ecs_cluster" "c17-ecs-cluster" {
 # S3 BUCKET
 
 resource "aws_s3_bucket" "s3_bucket" {
-    bucket = "c17-cattus-short-term-bucket"
+    bucket = "c17-cattus-historic-bucket"
     force_destroy = true
 }
 
