@@ -383,7 +383,13 @@ resource "aws_lambda_function" "short_pipeline_lambda" {
 
     environment {
         variables = {
-            
+            DB_HOST=var.DB_HOST
+            DB_PORT=var.DB_PORT
+            DB_USER=var.DB_USER
+            DB_PASSWORD=var.DB_PASSWORD
+            DB_NAME=var.DB_NAME
+            DB_SCHEMA=var.DB_SCHEMA
+            S3_BUCKET=aws_s3_bucket.s3_bucket.bucket
         }
     }
 }
@@ -401,7 +407,13 @@ resource "aws_lambda_function" "long_pipeline_lambda" {
 
     environment {
         variables = {
-            
+            DB_HOST=var.DB_HOST
+            DB_PORT=var.DB_PORT
+            DB_USER=var.DB_USER
+            DB_PASSWORD=var.DB_PASSWORD
+            DB_NAME=var.DB_NAME
+            DB_SCHEMA=var.DB_SCHEMA
+            S3_BUCKET=aws_s3_bucket.s3_bucket.bucket
         }
     }
 }
@@ -409,7 +421,7 @@ resource "aws_lambda_function" "long_pipeline_lambda" {
 # Scheduler
 
 resource "aws_iam_role" "scheduler_role" {
-  name = "EventBridgeSchedulerRole"
+  name = "EventBridgeSchedulerRole-c17-cattus"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

@@ -3,10 +3,6 @@
 from logging import getLogger
 
 
-def hello_world():
-    return "Hello World!"
-
-
 def lambda_handler(event, context):
     """
     Main Lambda Handler Function.
@@ -19,7 +15,7 @@ def lambda_handler(event, context):
     logger = getLogger()
     logger.info("Initiating Info level logger.")
     try:
-        logger.info(hello_world())
+        logger.info("Hello World!")
         return {
             "statusCode": 200,
             "message": "Hello."
