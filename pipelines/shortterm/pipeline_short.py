@@ -20,7 +20,7 @@ def run_pipeline():
     """Runs the pipeline."""
 
     logger = getLogger()
-    logger.info("Starting short term ETL pipeline..")
+    logger.info("Starting short term ETL pipeline...")
 
     clean_df = transform_data()
 
