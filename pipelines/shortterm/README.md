@@ -16,3 +16,9 @@
 - Loops through plant ids 1 to 50, skipping missing plants
 - Returns a pandas DataFrame containing all the individual plant data
 - Logs all skipped plants (with their IDS, error messages, and status codes) to 'skipped_plants.log' file
+
+## load_short.py script
+
+- Takes in transformed data as a pandas DataFrame
+- Has a function to insert data in every table within the database
+- Populates all tables within the database (Checks for duplicates)
