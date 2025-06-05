@@ -33,7 +33,7 @@ def test_run_valid(caplog):
         mock_load.assert_called_once_with(mock_summary)
         out = caplog.text
         assert "Attempting pipeline run..." in out
-        assert "Successfully recieved data from RDS!" in out
+        assert "Successfully received data from RDS!" in out
         assert "Successfully summarised data from RDS!" in out
         assert "Successfully loaded data into S3!" in out
 
@@ -47,7 +47,7 @@ def test_run_rds_empty():
             patch('pipeline.get_summary_from_df'), \
             patch('pipeline.load_all'):
 
-        with raises(ValueError, match="Recieved no data from RDS."):
+        with raises(ValueError, match="Received no data from RDS."):
             run()
 
 
