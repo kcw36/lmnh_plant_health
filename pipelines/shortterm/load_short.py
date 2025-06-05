@@ -12,7 +12,7 @@ from pyodbc import connect, Connection
 
 def get_connection() -> Connection:
     """Return database connection."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Getting RDS connection...")
     connection_string = f"""
                             DRIVER={{ODBC Driver 18 for SQL Server}};
@@ -29,7 +29,7 @@ def get_connection() -> Connection:
 
 def insert_origin_country(data: DataFrame, conn: Connection):
     """Insert data into `origin_country` table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Inserting into origin_country...")
 
     existing_countries_query = "SELECT name FROM origin_country;"
@@ -55,7 +55,7 @@ def insert_origin_country(data: DataFrame, conn: Connection):
 
 def insert_botanist(data: DataFrame, conn: Connection):
     """Insert data into `botanist` table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Inserting into botanist...")
 
     existing_botanist_query = "SELECT name, email, phone FROM botanist;"
@@ -82,7 +82,7 @@ def insert_botanist(data: DataFrame, conn: Connection):
 
 def insert_origin_city(data: DataFrame, conn: Connection):
     """Insert data into `origin_city` table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Inserting into origin_city...")
 
     country_query = "SELECT country_id, name FROM origin_country"
@@ -119,7 +119,7 @@ def insert_origin_city(data: DataFrame, conn: Connection):
 
 def insert_plant(data: DataFrame, conn: Connection):
     """Insert data into `plant` table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Inserting into plant...")
 
     city_country_query = """
@@ -167,7 +167,7 @@ def insert_plant(data: DataFrame, conn: Connection):
 
 def insert_botanist_plant(data: DataFrame, conn: Connection):
     """Insert data into `botanist_plant` table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Inserting into botanist_plant...")
 
     botanist_id_email_query = "SELECT botanist_id, email FROM botanist"
@@ -204,7 +204,7 @@ def insert_botanist_plant(data: DataFrame, conn: Connection):
 
 def insert_record(data: DataFrame, conn: Connection):
     """Insert data into `record` table."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Inserting into record...")
 
     records = data[[
@@ -247,7 +247,7 @@ def insert_record(data: DataFrame, conn: Connection):
 
 def load_data(data: DataFrame, conn: Connection):
     """Load all plant data to the database in correct order."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Starting data load pipeline...")
 
     insert_origin_country(data, conn)
