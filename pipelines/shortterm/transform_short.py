@@ -1,6 +1,6 @@
 """Script to clean the raw plant data."""
 import pandas as pd
-from extract import fetch_all_plants
+from extract_short import fetch_all_plants
 
 
 def extract_nested_columns(raw_plants: pd.DataFrame) -> pd.DataFrame:

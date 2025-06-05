@@ -3,7 +3,7 @@
 import pytest
 import pandas as pd
 
-from transform import (
+from transform_short import (
     clean_phone_nos, validate_datetime_cols,
     validate_numeric_cols, validate_string_cols,
     drop_irrelevant_columns, extract_nested_columns)
