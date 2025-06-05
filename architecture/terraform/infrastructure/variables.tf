@@ -34,3 +34,15 @@ variable DB_NAME {
 variable DB_SCHEMA {
     type = string
 }
+
+variable SUBNET_1 {
+    type = string
+}
+
+variable SUBNET_2 {
+    type = string
+}
+
+variable SUBNET_3 {
+    type = string
+}

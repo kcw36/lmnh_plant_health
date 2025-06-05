@@ -2,7 +2,7 @@
 
 - This is Terraform deploy scripts for deploying data storage infrastructure to AWS:
     - ECS Fargate Service (Task definition included)
-    - Scheduler
+    - Schedulers
     - Lambdas
         - Report
         - Short pipeline
