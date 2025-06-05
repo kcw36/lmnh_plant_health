@@ -9,7 +9,7 @@
     - Run `pip install -r requirements.txt`
 
 
-## `extract_short.py` script
+## `extract_short.py` module
 
 ### Key Steps 
 - Defines a custom `APIError` class to raise specific HTTP-related issues (404, 500, etc)
@@ -19,7 +19,7 @@
 - Logs all skipped plants (with their IDS, error messages, and status codes) to 'skipped_plants.log' file
 
 
-## `transform_short.py` script
+## `transform_short.py` module
 
 Responsible for transforming the raw plant data into a clean, structured format, 
 so that it is ready for the loading phase
@@ -29,13 +29,11 @@ so that it is ready for the loading phase
     - Can optionally clean the data from an uncleaned CSV if using the `load_csv` function.
 - Extracts nested fields from dictionary structures (botanist, origin_location)
 - Drops columns not required in the loading phase (botanist, images, etc)
-- Converts strings to proper format (origin_city, origin_country, botanist_name, etc)
-- Converts and rounds numeric fields (temperature, soil_moisture)
-- Ensures date/time columns (last_watered, recording_taken) are datetime objects
+- Converts strings to str objects
+- Converts and rounds numeric fields 
+- Ensures date/time columns are datetime objects
 - Formats phone numbers into valid E.164 format (e.g `+1234567890`), defaulting to UK (leading with `+44`)
-- Replaces any remaining NaN values (if any) with empty strings.
 - Returns a cleaned Pandas DataFrame, ready to be loaded into the RDS database.
-    - (or can be saved as a CSV if `save_to_csv` function is used)
 
 ### Output
 The transformed DataFrame contains the following columns:

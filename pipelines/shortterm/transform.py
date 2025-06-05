@@ -1,12 +1,6 @@
 """Script to clean the raw plant data."""
 import pandas as pd
-from extract_short import fetch_all_plants
-
-
-def load_csv(filename: str) -> pd.DataFrame:
-    """Loads raw plant data csv into a pandas dataframe."""
-
-    return pd.read_csv(filename)
+from extract import fetch_all_plants
 
 
 def extract_nested_columns(raw_plants: pd.DataFrame) -> pd.DataFrame:
@@ -76,19 +70,18 @@ def clean_phone_nos(plants_df: pd.DataFrame) -> pd.DataFrame:
             cleaned_phone_nos.append('')
             continue
         phone_no = str(phone_no)
-        if 'x' in phone_no:  # remove extension (e.g 1234 x373)
+        if 'x' in phone_no:
             phone_no = phone_no.split('x')[0]
 
-        # filters out symbols (like '-', '.', '+')
         number_str = ''.join(char for char in phone_no if char.isdigit())
 
-        if len(number_str) == 11 and number_str.startswith('0'):  # UK number
+        if len(number_str) == 11 and number_str.startswith('0'):
             cleaned_no = '+44'+number_str[1:]
-        elif len(number_str) == 11 and number_str.startswith('1'):  # US number
+        elif len(number_str) == 11 and number_str.startswith('1'):
             cleaned_no = '+'+number_str
-        elif len(number_str) == 10:  # default to UK
+        elif len(number_str) == 10:
             cleaned_no = '+44'+number_str
-        else:  # couldn't classify as UK or US, must be other intl.
+        else:
             cleaned_no = '+'+number_str
         cleaned_phone_nos.append(cleaned_no)
     plants_df['botanist_phone'] = cleaned_phone_nos
@@ -96,7 +89,8 @@ def clean_phone_nos(plants_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_df(plants_df: pd.DataFrame) -> pd.DataFrame:
-    """Transforms and cleans dataframe to match target schema."""
+    """Transforms and cleans dataframe to match target schema, 
+    filling NaN values with empty strings."""
 
     plants_df = validate_string_cols(plants_df)
     plants_df = validate_numeric_cols(plants_df)
@@ -112,12 +106,6 @@ def clean_df(plants_df: pd.DataFrame) -> pd.DataFrame:
     return clean_df
 
 
-def save_to_csv(clean_plants: pd.DataFrame, output_path: str) -> None:
-    """Saves cleaned pandas DataFrame to CSV file."""
-
-    clean_plants.to_csv(output_path, index=False)
-
-
 def transform_data() -> pd.DataFrame:
     """Runs the transformation phase of the pipeline."""
 
@@ -126,10 +114,12 @@ def transform_data() -> pd.DataFrame:
     raw_plants_df = drop_irrelevant_columns(raw_plants_df)
     clean_plants_df = clean_df(raw_plants_df)
 
-    save_to_csv(clean_plants_df, "clean_plants.csv")
     return clean_plants_df
 
 
 if __name__ == "__main__":
 
-    transform_data()
+    clean_plants = transform_data()
+
+    clean_plants.to_csv("clean_plants.csv", index=False)
+    # save_to_csv(clean_plants, "clean_plants.csv")

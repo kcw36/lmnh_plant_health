@@ -2,7 +2,7 @@
 """Script to test functionality of the `extract_short.py` script."""
 import pytest
 import pandas as pd
-from extract_short import fetch_all_plants, fetch_plant_info, APIError
+from extract import fetch_all_plants, fetch_plant_info, APIError
 
 URL_BASE = "https://sigma-labs-bot.herokuapp.com/api/plants/"
 
