@@ -4,6 +4,9 @@ The Liverpool Natural History Museum Plant Monitoring System is stored in two pa
 
 ## Short-term
 
+The short term data solution uses a 3NF design [ERD](short_term_erd.png), to reduce redundancy and improve efficiency when querying. The schema for this can be viewed in the[here](schema.sql). 
+
+Use `bash connect.sh` to connect to the database. If this is your first time running this script you should run `bash set_up_database.sh`.  
 
 ## Long-term
 
