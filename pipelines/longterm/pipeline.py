@@ -56,7 +56,7 @@ def lambda_handler(event, context):
         }
     except Exception as e:
         logger.error("Error processing pipeline: %s", str(e))
-        raise
+        raise RuntimeError("Error with Python runtime.")
 
 
 if __name__ == "__main__":
