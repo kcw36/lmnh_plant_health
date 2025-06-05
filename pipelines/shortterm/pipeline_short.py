@@ -38,7 +38,7 @@ def lambda_handler(event, context):
 
     set_logger()
     logger = getLogger()
-    logger.info("Initiating short-term ETL with Lambda..")
+    logger.info("Initiating short-term ETL with Lambda...")
 
     try:
         run_pipeline(logger)
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         }
     except Exception as e:
         logger.error("Short-term ETL pipeline failed: %s", str(e))
-        raise
+        raise RuntimeError("Error with Python runtime.")
 
 
 if __name__ == "__main__":
