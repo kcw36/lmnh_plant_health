@@ -19,6 +19,7 @@
 - Logs all skipped plants (with their IDS, error messages, and status codes) to 'skipped_plants.log' file
 
 
+
 ## `transform_short.py` module
 
 Responsible for transforming the raw plant data into a clean, structured format, 
@@ -49,3 +50,10 @@ The transformed DataFrame contains the following columns:
 - 'botanist_name' (str object)
 - 'botanist_email' (str object)
 - 'botanist_phone' (str object)
+
+## load_short.py script
+
+- Takes in transformed data as a pandas DataFrame
+- Has a function to insert data in every table within the database
+- Populates all tables within the database (Checks for duplicates)
+
