@@ -12,7 +12,7 @@ from pyarrow import Table, parquet as pq
 
 def create_data_directory() -> bool:
     """Return true if data directory created successfully."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Creating empty data directory for Parquet files...")
     dir_path = "data"
     if not path.exists(dir_path):
@@ -24,7 +24,7 @@ def create_data_directory() -> bool:
 
 def delete_data_directory() -> bool:
     """Return true if deleted data directory."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Deleting filled data directory...")
     dir_path = "data"
     rmtree(dir_path)
@@ -35,7 +35,7 @@ def delete_data_directory() -> bool:
 
 def create_parquet(data: DataFrame) -> bool:
     """Save data as parquet files."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Storing local parquet files...")
     datatable = Table.from_pandas(data)
     if not datatable:
@@ -50,7 +50,7 @@ def create_parquet(data: DataFrame) -> bool:
 
 def get_s3_client() -> client:
     """Return client to S3 bucket."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Return S3 client")
     return client("s3",
                   aws_access_key_id=ENV["AWS_ACCESS_KEY_ID"],
@@ -59,7 +59,7 @@ def get_s3_client() -> client:
 
 def load_to_s3(awsclient: client) -> bool:
     """Load objects to S3."""
-    logger = getLogger(__name__)
+    logger = getLogger()
     logger.info("Starting load to S3...")
     has_data = False
     for root, _, files in walk("data"):
