@@ -1,6 +1,6 @@
 # pylint: skip-file
 
-"""Module for testing trasnform methods."""
+"""Module for testing transform methods."""
 
 from pandas.api.typing import DataFrameGroupBy
 from pandas import DataFrame
