@@ -9,7 +9,7 @@
     - Run `pip install -r requirements.txt`
 
 
-## `extract_short.py` module
+## `extract_short.py` 
 
 ### Key Steps 
 - Defines a custom `APIError` class to raise specific HTTP-related issues (404, 500, etc)
@@ -20,7 +20,7 @@
 
 
 
-## `transform_short.py` module
+## `transform_short.py` 
 
 Responsible for transforming the raw plant data into a clean, structured format, 
 so that it is ready for the loading phase
@@ -51,9 +51,29 @@ The transformed DataFrame contains the following columns:
 - 'botanist_email' (str object)
 - 'botanist_phone' (str object)
 
-## load_short.py script
 
+
+## `load_short.py` 
+
+### Key Steps
 - Takes in transformed data as a pandas DataFrame
 - Has a function to insert data in every table within the database
 - Populates all tables within the database (Checks for duplicates)
 
+
+
+## `pipeline_short.py`
+
+This script is required for running the short term ETL pipeline for the LMNH Plant Health project.
+
+### Key Steps
+- Calls the data transformation logic and retrieves the cleaned Pandas DataFrame
+- Loads the cleaned DataFrame into the RDS
+- Includes logging to track progress of the pipeline and for debugging purposes
+
+- The 'lambda_handler' function triggers the above steps in the cloud
+- Returns status codes for integration with cloud services.
+
+### Usage
+- To run from the command line: `python3 pipeline_short.py`
+- Or deployed using **AWS Lambda** for cloud-based automated execution
