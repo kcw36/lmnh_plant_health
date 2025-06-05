@@ -2,5 +2,5 @@
 requests
 requests_mock
 pandas
-pylint
 pytest
+pylint
