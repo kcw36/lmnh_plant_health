@@ -33,11 +33,12 @@ def insert_origin_country(data: DataFrame, conn: Connection):
     logger.info("Inserting into origin_country...")
 
     existing_countries_query = "SELECT name FROM origin_country;"
-    insert_query = """INSERT INTO origin_country (name) VALUES (?);"""
-
-    unique_countries = data["origin_country"].unique()
     countries_in_db = pd.read_sql(existing_countries_query, conn)[
         "name"].to_list()
+    logger.info("Querying the `origin_country` table for country names.")
+
+    unique_countries = data["origin_country"].unique()
+
     countries_to_insert = [
         country for country in unique_countries if country not in countries_in_db
     ]
@@ -46,6 +47,7 @@ def insert_origin_country(data: DataFrame, conn: Connection):
         logger.info("No new countries to insert.")
         return
 
+    insert_query = """INSERT INTO origin_country (name) VALUES (?);"""
     with conn.cursor() as curs:
         curs.executemany(insert_query, [(country,)
                          for country in countries_to_insert])
@@ -59,14 +61,13 @@ def insert_botanist(data: DataFrame, conn: Connection):
     logger.info("Inserting into botanist...")
 
     existing_botanist_query = "SELECT name, email, phone FROM botanist;"
-    insert_query = "INSERT INTO botanist (name, email, phone) VALUES (?, ?, ?);"
+    botanist_in_db = pd.read_sql(existing_botanist_query, conn)
+    logger.info("Querying the `botanist` table for botanist names and emails.")
+    botanist_in_db = set(botanist_in_db.itertuples(index=False, name=None))
 
     unique_botanists = data[["botanist_name",
                              "botanist_email", "botanist_phone"]].drop_duplicates()
     unique_botanists = set(unique_botanists.itertuples(index=False, name=None))
-
-    botanist_in_db = pd.read_sql(existing_botanist_query, conn)
-    botanist_in_db = set(botanist_in_db.itertuples(index=False, name=None))
 
     botanist_to_insert = list(unique_botanists - botanist_in_db)
 
@@ -74,6 +75,7 @@ def insert_botanist(data: DataFrame, conn: Connection):
         logger.info("No new botanists to insert.")
         return
 
+    insert_query = "INSERT INTO botanist (name, email, phone) VALUES (?, ?, ?);"
     with conn.cursor() as curs:
         curs.executemany(insert_query, botanist_to_insert)
         conn.commit()
@@ -86,24 +88,25 @@ def insert_origin_city(data: DataFrame, conn: Connection):
     logger.info("Inserting into origin_city...")
 
     country_query = "SELECT country_id, name FROM origin_country"
-    existing_city_query = "SELECT name, country_id FROM origin_city"
-    insert_query = "INSERT INTO origin_city (name, country_id) VALUES (?, ?)"
-
-    unique_cities = data[["origin_city", "origin_country"]
-                         ].drop_duplicates()
-
     countries_in_db = pd.read_sql(country_query, conn)
+    logger.info(
+        "Querying the `origin_country` table for country name and its country_id.")
     countries_in_db = dict(
         zip(countries_in_db["name"], countries_in_db["country_id"]))
 
+    existing_city_query = "SELECT name, country_id FROM origin_city"
+    cities_in_db = pd.read_sql(existing_city_query, conn)
+    logger.info(
+        "Querying the `origin_city` table for city name and country_id associated with it.")
+    cities_in_db = set(cities_in_db.itertuples(index=False, name=None))
+
+    unique_cities = data[["origin_city", "origin_country"]
+                         ].drop_duplicates()
     unique_cities["country_id"] = unique_cities["origin_country"].map(
         countries_in_db)
     unique_cities = unique_cities.dropna(subset=["country_id"])
     unique_cities = set(unique_cities[["origin_city", "country_id"]].itertuples(
         index=False, name=None))
-
-    cities_in_db = pd.read_sql(existing_city_query, conn)
-    cities_in_db = set(cities_in_db.itertuples(index=False, name=None))
 
     cities_to_insert = list(unique_cities - cities_in_db)
 
@@ -111,6 +114,7 @@ def insert_origin_city(data: DataFrame, conn: Connection):
         logger.info("No new cities to insert.")
         return
 
+    insert_query = "INSERT INTO origin_city (name, country_id) VALUES (?, ?)"
     with conn.cursor() as curs:
         curs.executemany(insert_query, cities_to_insert)
         conn.commit()
@@ -130,26 +134,22 @@ def insert_plant(data: DataFrame, conn: Connection):
             FROM origin_city  
             JOIN origin_country ON origin_city.country_id = origin_country.country_id
     """
-
-    existing_plant_query = "SELECT plant_id FROM plant"
-    insert_query = "INSERT INTO plant (plant_id, name, city_id) VALUES (?, ?, ?)"
-
-    unique_plants = data[["plant_id", "name", "origin_city",
-                          "origin_country"]].drop_duplicates()
-
     city_country = pd.read_sql(city_country_query, conn)
     city_country = {
         (row.city_name, row.country_name): row.city_id
         for row in city_country.itertuples(index=False)
     }
 
+    existing_plant_query = "SELECT plant_id FROM plant"
+    plants_in_db = pd.read_sql(existing_plant_query, conn)[
+        "plant_id"].to_list()
+
+    unique_plants = data[["plant_id", "name", "origin_city",
+                          "origin_country"]].drop_duplicates()
     unique_plants["city_id"] = unique_plants.apply(
         lambda row: city_country.get((row.origin_city, row.origin_country)), axis=1
 
     )
-    plants_in_db = pd.read_sql(existing_plant_query, conn)[
-        "plant_id"].to_list()
-
     plants_to_insert = unique_plants[~unique_plants["plant_id"].isin(
         plants_in_db)]
     plants_to_insert = list(plants_to_insert[["plant_id", "name", "city_id"]].itertuples(
@@ -159,6 +159,7 @@ def insert_plant(data: DataFrame, conn: Connection):
         logger.info("No new plants to insert.")
         return
 
+    insert_query = "INSERT INTO plant (plant_id, name, city_id) VALUES (?, ?, ?)"
     with conn.cursor() as curs:
         curs.executemany(insert_query, plants_to_insert)
         conn.commit()
@@ -238,7 +239,6 @@ def insert_record(data: DataFrame, conn: Connection):
         INSERT INTO record (temperature, last_watered, soil_moisture, recording_taken, plant_id)
         VALUES (?, ?, ?, ?, ?)
     """
-
     with conn.cursor() as curs:
         curs.executemany(insert_query, records_to_insert)
         conn.commit()
