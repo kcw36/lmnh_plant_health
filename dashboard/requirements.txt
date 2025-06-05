@@ -1,2 +1,7 @@
 pylint
 pytest
+python-dotenv
+pyodbc
+pandas
+numpy
+streamlit
