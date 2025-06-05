@@ -41,7 +41,7 @@ def lambda_handler(event, context):
     logger.info("Initiating short-term ETL with Lambda...")
 
     try:
-        run_pipeline(logger)
+        run_pipeline()
         return {
             "statusCode": 200,
             "message": "Short-term ETL pipeline completed."
