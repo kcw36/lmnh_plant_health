@@ -32,7 +32,7 @@ def insert_origin_country(data: DataFrame, conn: Connection):
     logger = getLogger()
     logger.info("Inserting into origin_country...")
 
-    existing_countries_query = "SELECT name FROM origin_country;"
+    existing_countries_query = "SELECT name FROM gamma.origin_country;"
     countries_in_db = pd.read_sql(existing_countries_query, conn)[
         "name"].to_list()
     logger.info("Querying the `origin_country` table for country names.")
@@ -44,7 +44,7 @@ def insert_origin_country(data: DataFrame, conn: Connection):
     ]
 
     if countries_to_insert:
-        insert_query = """INSERT INTO origin_country (name) VALUES (?);"""
+        insert_query = """INSERT INTO gamma.origin_country (name) VALUES (?);"""
         with conn.cursor() as curs:
             curs.executemany(insert_query, [(country,)
                                             for country in countries_to_insert])
@@ -59,7 +59,7 @@ def insert_botanist(data: DataFrame, conn: Connection):
     logger = getLogger()
     logger.info("Inserting into botanist...")
 
-    existing_botanist_query = "SELECT name, email, phone FROM botanist;"
+    existing_botanist_query = "SELECT name, email, phone FROM gamma.botanist;"
     botanist_in_db = pd.read_sql(existing_botanist_query, conn)
     logger.info("Querying the `botanist` table for botanist names and emails.")
     botanist_in_db = set(botanist_in_db.itertuples(index=False, name=None))
@@ -71,7 +71,7 @@ def insert_botanist(data: DataFrame, conn: Connection):
     botanist_to_insert = list(unique_botanists - botanist_in_db)
 
     if botanist_to_insert:
-        insert_query = "INSERT INTO botanist (name, email, phone) VALUES (?, ?, ?);"
+        insert_query = "INSERT INTO gamma.botanist (name, email, phone) VALUES (?, ?, ?);"
         with conn.cursor() as curs:
             curs.executemany(insert_query, botanist_to_insert)
             conn.commit()
@@ -85,14 +85,14 @@ def insert_origin_city(data: DataFrame, conn: Connection):
     logger = getLogger()
     logger.info("Inserting into origin_city...")
 
-    country_query = "SELECT country_id, name FROM origin_country"
+    country_query = "SELECT country_id, name FROM gamma.origin_country"
     countries_in_db = pd.read_sql(country_query, conn)
     logger.info(
         "Querying the `origin_country` table for country name and its country_id.")
     countries_in_db = dict(
         zip(countries_in_db["name"], countries_in_db["country_id"]))
 
-    existing_city_query = "SELECT name, country_id FROM origin_city"
+    existing_city_query = "SELECT name, country_id FROM gamma.origin_city"
     cities_in_db = pd.read_sql(existing_city_query, conn)
     logger.info(
         "Querying the `origin_city` table for city name and country_id associated with it.")
@@ -109,7 +109,7 @@ def insert_origin_city(data: DataFrame, conn: Connection):
     cities_to_insert = list(unique_cities - cities_in_db)
 
     if cities_to_insert:
-        insert_query = "INSERT INTO origin_city (name, country_id) VALUES (?, ?)"
+        insert_query = "INSERT INTO gamma.origin_city (name, country_id) VALUES (?, ?)"
         with conn.cursor() as curs:
             curs.executemany(insert_query, cities_to_insert)
             conn.commit()
@@ -128,8 +128,8 @@ def insert_plant(data: DataFrame, conn: Connection):
               origin_city.name AS city_name,
               origin_country.country_id,
               origin_country.name AS country_name 
-            FROM origin_city  
-            JOIN origin_country ON origin_city.country_id = origin_country.country_id
+            FROM gamma.origin_city  
+            JOIN gamma.origin_country ON origin_city.country_id = origin_country.country_id
     """
     city_country = pd.read_sql(city_country_query, conn)
     city_country = {
@@ -137,7 +137,7 @@ def insert_plant(data: DataFrame, conn: Connection):
         for row in city_country.itertuples(index=False)
     }
 
-    existing_plant_query = "SELECT plant_id FROM plant"
+    existing_plant_query = "SELECT plant_id FROM gamma.plant"
     plants_in_db = pd.read_sql(existing_plant_query, conn)[
         "plant_id"].to_list()
 
@@ -153,7 +153,7 @@ def insert_plant(data: DataFrame, conn: Connection):
         index=False, name=None))
 
     if plants_to_insert:
-        insert_query = "INSERT INTO plant (plant_id, name, city_id) VALUES (?, ?, ?)"
+        insert_query = "INSERT INTO gamma.plant (plant_id, name, city_id) VALUES (?, ?, ?)"
         with conn.cursor() as curs:
             curs.executemany(insert_query, plants_to_insert)
             conn.commit()
@@ -167,12 +167,12 @@ def insert_botanist_plant(data: DataFrame, conn: Connection):
     logger = getLogger()
     logger.info("Inserting into botanist_plant...")
 
-    botanist_id_email_query = "SELECT botanist_id, email FROM botanist"
+    botanist_id_email_query = "SELECT botanist_id, email FROM gamma.botanist"
     botanist_id_email = pd.read_sql(botanist_id_email_query, conn)
     botanist_id_email = dict(
         zip(botanist_id_email["email"], botanist_id_email["botanist_id"]))
 
-    botanist_plant_query = "SELECT plant_id, botanist_id FROM botanist_plant"
+    botanist_plant_query = "SELECT plant_id, botanist_id FROM gamma.botanist_plant"
     botanist_plant_in_db = pd.read_sql(botanist_plant_query, conn)
     botanist_plant_in_db = set(tuple(x)
                                for x in botanist_plant_in_db.to_numpy())
@@ -188,7 +188,7 @@ def insert_botanist_plant(data: DataFrame, conn: Connection):
     ]
 
     if botanist_plant_to_insert:
-        insert_query = "INSERT INTO botanist_plant (plant_id, botanist_id) VALUES (?, ?)"
+        insert_query = "INSERT INTO gamma.botanist_plant (plant_id, botanist_id) VALUES (?, ?)"
         with conn.cursor() as curs:
             curs.executemany(insert_query, botanist_plant_to_insert)
             conn.commit()
@@ -228,7 +228,7 @@ def insert_record(data: DataFrame, conn: Connection):
 
     if records_to_insert:
         insert_query = """
-            INSERT INTO record (temperature, last_watered, soil_moisture, recording_taken, plant_id)
+            INSERT INTO gamma.record (temperature, last_watered, soil_moisture, recording_taken, plant_id)
             VALUES (?, ?, ?, ?, ?)
         """
         with conn.cursor() as curs:
