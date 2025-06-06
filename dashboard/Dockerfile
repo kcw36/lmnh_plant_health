@@ -14,6 +14,10 @@ RUN curl https://packages.microsoft.com/config/rhel/7/prod.repo | tee /etc/yum.r
 RUN ACCEPT_EULA=Y dnf install -y msodbcsql18
 RUN export CFLAGS=”-I/opt/include” && export LDFLAGS=”-L/opt/lib”
 
-COPY dashboard.py .
+COPY data.py .
+COPY visualisations.py .
+COPY historic_data.py .
+COPY pages .
+COPY Real_Time_Data_Dashboard.py .
 
-CMD [ "dashboard.lambda_handler" ]
+CMD [ "streamlit", "run", "Real_Time_Data_Dashboard.py" ]

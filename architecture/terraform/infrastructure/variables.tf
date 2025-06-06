@@ -46,3 +46,7 @@ variable SUBNET_2 {
 variable SUBNET_3 {
     type = string
 }
+
+variable S3_OUTPUT {
+    type = string
+}

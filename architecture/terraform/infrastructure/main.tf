@@ -252,11 +252,11 @@ resource "aws_ecs_task_definition" "task" {
                 "value": aws_s3_bucket.s3_bucket.bucket
             },
             {
-                "name": "AWS_REGION",
+                "name": "AWS_REGION_NAME",
                 "value": var.AWS_REGION
             },
             {
-                "name": "GLUE_CATALOG_NAME",
+                "name": "ATHENA_DB_NAME",
                 "value": aws_glue_catalog_database.data_catalog.name
             },
             {
@@ -266,8 +266,40 @@ resource "aws_ecs_task_definition" "task" {
             {
                 "name": "AWS_SECRET_ACCESS_KEY",
                 "value": var.AWS_SECRET_KEY
+            },
+            {
+                "name": "S3_OUTPUT",
+                "value": var.S3_OUTPUT
+            },
+            {
+                "name": "DB_PORT",
+                "value": var.DB_PORT
+            },
+                        {
+                "name": "DB_USER",
+                "value": var.DB_USER
+            },
+            {
+                "name": "DB_PASSWORD",
+                "value": var.DB_PASSWORD
+            },
+            {
+                "name": "DB_NAME",
+                "value": var.DB_NAME
+            },
+            {
+                "name": "DB_SCHEMA",
+                "value": var.DB_SCHEMA
             }
-        ]
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-group": "/ecs/c17-cattus-dashboard-logs",
+                "awslogs-region": var.AWS_REGION,
+                "awslogs-stream-prefix": "ecs"
+            }
+        }
     }])
     execution_role_arn = aws_iam_role.ecs_task_exec_role.arn
     task_role_arn = aws_iam_role.ecs_task_exec_role.arn
