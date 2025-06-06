@@ -1,9 +1,9 @@
 """Report script that notifies botanist if there is something wrong with a plant."""
 from os import environ as ENV
-from dotenv import load_dotenv
-
-from logging import getLogger, INFO, StreamHandler
 from sys import stdout
+from logging import getLogger, INFO, StreamHandler
+
+from dotenv import load_dotenv
 
 import boto3
 from pandas import DataFrame
@@ -47,15 +47,18 @@ def report_to_topic(sns_client, report: str):
             Message=report,
             Subject="Plant Issue Report"
         )
-        logger.info(f"Message sent. ID: {response['MessageId']}")
+        logger.info("Message sent. ID: %s", response['MessageId'])
     except Exception as e:
-        logger.error(f"Failed to send message: {e}")
+        logger.error("Failed to send message: %s", e)
 
 
 def run():
     """Run the Report script."""
     sns_client = boto3.client(
-        "sns", aws_access_key_id=ENV["AWS_ACCESS_KEY_ID"], aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"], aws_session_token=ENV["AWS_SESSION_TOKEN"], region_name=ENV["TOPIC_REGION"])
+        "sns", aws_access_key_id=ENV["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=ENV["AWS_SESSION_TOKEN"],
+        region_name=ENV["TOPIC_REGION"])
     logger.info("Connected to SNS Topic.")
 
     with get_connection() as conn:
@@ -81,5 +84,5 @@ def lambda_handler(event=None, context=None):
 
 if __name__ == "__main__":
     load_dotenv()
-    report = run()
-    print(report)
+    plants_report = run()
+    print(plants_report)
