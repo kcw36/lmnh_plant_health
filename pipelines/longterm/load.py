@@ -14,7 +14,7 @@ def create_data_directory() -> bool:
     """Return true if data directory created successfully."""
     logger = getLogger()
     logger.info("Creating empty data directory for Parquet files...")
-    dir_path = "data"
+    dir_path = "/tmp/data"
     if not path.exists(dir_path):
         mkdir(dir_path)
         mkdir(f"{dir_path}/plant")
@@ -26,7 +26,7 @@ def delete_data_directory() -> bool:
     """Return true if deleted data directory."""
     logger = getLogger()
     logger.info("Deleting filled data directory...")
-    dir_path = "data"
+    dir_path = "/tmp/data"
     rmtree(dir_path)
     if not path.exists(dir_path):
         return False
@@ -41,7 +41,7 @@ def create_parquet(data: DataFrame) -> bool:
     if not datatable:
         logger.error("No data given.")
         return False
-    pq.write_to_dataset(datatable, root_path="data/plant",
+    pq.write_to_dataset(datatable, root_path="/tmp/data/plant",
                         partition_cols=["year", "month", "day"],
                         basename_template="summary-{i}")
     logger.info("Parquet created successfully.")
@@ -62,14 +62,14 @@ def load_to_s3(awsclient: client) -> bool:
     logger = getLogger()
     logger.info("Starting load to S3...")
     has_data = False
-    for root, _, files in walk("data"):
+    for root, _, files in walk("/tmp/data"):
         if files:
             has_data = True
             for file in files:
                 full_path = path.join(root, file)
                 logger.info("Uploading file: %s", full_path)
                 awsclient.upload_file(full_path,
-                                      ENV["S3_BUCKET"], f"input/{root[5:]}/{file}")
+                                      ENV["S3_BUCKET"], f"input/{root[10:]}/{file}")
     return has_data
 
 
