@@ -52,19 +52,24 @@ def report_to_topic(sns_client, report: str):
         logger.error(f"Failed to send message: {e}")
 
 
+def run():
+    """Run the Report script."""
+    sns_client = boto3.client(
+        "sns", aws_access_key_id=ENV["AWS_ACCESS_KEY_ID"], aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"], aws_session_token=ENV["AWS_SESSION_TOKEN"], region_name=ENV["TOPIC_REGION"])
+    logger.info("Connected to SNS Topic.")
+
+    with get_connection() as conn:
+        critical_plants = identify_critical_plants(conn)
+
+    report = turn_to_report(critical_plants)
+    report_to_topic(sns_client, report)
+    return report
+
+
 def lambda_handler(event=None, context=None):
     """AWS Lambda handler that sends out plant report using SNS."""
     try:
-        sns_client = boto3.client(
-            "sns", aws_access_key_id=ENV["AWS_ACCESS_KEY_ID"], aws_secret_access_key=ENV["AWS_SECRET_ACCESS_KEY"], aws_session_token=ENV["AWS_SESSION_TOKEN"], region_name=ENV["TOPIC_REGION"])
-        logger.info("Connected to SNS Topic.")
-
-        with get_connection() as conn:
-            critical_plants = identify_critical_plants(conn)
-
-        report = turn_to_report(critical_plants)
-        report_to_topic(sns_client, report)
-
+        report = run()
         return {
             "statusCode": 200,
             "message": report
@@ -72,3 +77,9 @@ def lambda_handler(event=None, context=None):
     except Exception as e:
         logger.error("Error processing pipeline: %s", str(e))
         raise RuntimeError("Error with Python runtime.")
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    report = run()
+    print(report)
