@@ -33,7 +33,7 @@ def get_full_data(conn: Connection, schema: str) -> list:
         query = f"""SELECT p.plant_id, p.name,
                      r.temperature, r.last_watered, r.soil_moisture,
                      r.recording_taken, ci.name, co.name, b.name
-                     FROM {schema}.plant AS P
+                     FROM {schema}.plant AS p
                      JOIN {schema}.record AS r
                      ON (p.plant_id = r.plant_id)
                      JOIN {schema}.botanist_plant AS bp

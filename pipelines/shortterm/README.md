@@ -1,7 +1,6 @@
-
 # Short Term Pipeline
 
-## Setup
+# Setup
 - Setup virtual environment
     - Run `python3 -m venv .venv`
     - Run `source .venv/bin/activate`
@@ -9,7 +8,25 @@
     - Run `pip install -r requirements.txt`
 
 
-## `extract_short.py` 
+# `.env file`
+
+```sh
+DB_HOST=<DB_IP_ADDRESS>
+DB_PORT=<PORT>
+DB_NAME=<NAME_OF_DB>
+DB_PASSWORD=<PASS_FOR_DB>
+DB_USER=<USER_FOR_ACCESSING_DB>
+DB_SCHEMA=<SCHEMA_USED_FOR_DB>
+
+AWS_REGION=<REGION_THAT_RESOURCES_DEPLOY_TO>
+AWS_ACCESS_KEY_ID=<AWS_USER_KEY_IDENTIFIER>
+AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
+S3_BUCKET=<BUCKET_FROM_TERRAFORM>
+```
+
+# Python
+
+## `extract` module
 
 ### Key Steps 
 - Defines a custom `APIError` class to raise specific HTTP-related issues (404, 500, etc).
@@ -19,8 +36,7 @@
 - Logs all skipped plants (with their IDS, error messages, and status codes) to 'skipped_plants.log' file.
 
 
-
-## `transform_short.py` 
+## `transform` module
 
 Responsible for transforming the raw plant data into a clean, structured format, so that it is ready for the loading phase.
 
@@ -50,9 +66,7 @@ The transformed DataFrame contains the following columns:
 - 'botanist_email' (str object)
 - 'botanist_phone' (str object)
 
-
-
-## `load_short.py` 
+## `load` module
 
 ### Key Steps
 - Takes in transformed data as a pandas DataFrame.
@@ -60,8 +74,7 @@ The transformed DataFrame contains the following columns:
 - Populates all tables within the database (Checks for duplicates).
 
 
-
-## `pipeline_short.py`
+## `pipeline` script
 
 This script is required for running the short term ETL pipeline for the LMNH Plant Health project.
 
@@ -78,11 +91,12 @@ This script is required for running the short term ETL pipeline for the LMNH Pla
 - Or deployed using **AWS Lambda** for cloud-based automated execution.
 
 
-## Dockerfile
+# Dockerfile
 
 Allows the short-term ETL pipeline to be packaged and deployed as a container, making it suitable for execution on AWS Lambda with custom dependencies such as OBDC drivers.
 
 ### Key Steps
+
 - Installs all required python packages and OBDC drivers.
 - Copies all the required ETL scripts.
 - Sets the lambda handler function that AWS Lambda should run when triggered.
