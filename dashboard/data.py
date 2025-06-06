@@ -49,13 +49,11 @@ class DatabaseFunctions:
                         cursor.execute(query, param_list)
                         columns = [column[0] for column in cursor.description]
                         data = cursor.fetchall()
-                        return pd.DataFrame.from_records(data, columns=columns)
+                        return pd.DataFrame(data, columns=columns)
                 else:
                     return pd.read_sql(query, conn)
         except Exception as e:
             self.logger.error(f"Error executing query: {str(e)}")
-            self.logger.error(f"Query: {query}")
-            self.logger.error(f"Params: {params}")
             return pd.DataFrame()
 
 
