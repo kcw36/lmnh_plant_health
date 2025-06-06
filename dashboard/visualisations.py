@@ -73,7 +73,7 @@ class AlertsDisplay:
 
         chart = alt.Chart(low_reading_plants_df).mark_bar().encode(
             x=alt.X('reading_count:Q', title='Number of Readings'),
-            y=alt.Y('plant_name:N', title='Plant Species', sort='-x'),
+            y=alt.Y('plant_name:N', title='Plant Species', sort='x'),
             color=alt.Color('reading_count:Q', scale=alt.Scale(
                 scheme='reds'), legend=None),
             tooltip=['plant_name', 'reading_count']
@@ -86,7 +86,7 @@ class AlertsDisplay:
 
 
 class TimeSeriesCharts:
-    """Handles time series visualization for plant monitoring data."""
+    """Handles time series visualisation for plant monitoring data."""
 
     @staticmethod
     def create_temperature_trend(hourly_data: pd.DataFrame,
@@ -102,11 +102,16 @@ class TimeSeriesCharts:
             hourly_data = hourly_data[hourly_data['plant_name'].isin(
                 filtered_plants)]
 
+        hourly_data['hour_formatted'] = hourly_data['hour'].dt.strftime(
+            '%H:%M')
+        hourly_data['temperature_formatted'] = hourly_data['temperature'].round(
+            1).astype(str) + '°C'
+
         return alt.Chart(hourly_data).mark_line(point=True).encode(
             x=alt.X('hour:T', title='Time'),
             y=alt.Y('temperature:Q', title='Temperature (°C)'),
             color=alt.Color('plant_name:N', legend=None),
-            tooltip=['plant_name', 'hour', 'temperature']
+            tooltip=['plant_name', 'hour_formatted', 'temperature_formatted']
         ).properties(
             title='Average Temperature Trends (Last 24 Hours)',
             height=400
@@ -125,11 +130,16 @@ class TimeSeriesCharts:
             hourly_data = hourly_data[hourly_data['plant_name'].isin(
                 filtered_plants)]
 
+        hourly_data['hour_formatted'] = hourly_data['hour'].dt.strftime(
+            '%H:%M')
+        hourly_data['moisture_formatted'] = hourly_data['soil_moisture'].round(
+            1).astype(str) + '%'
+
         return alt.Chart(hourly_data).mark_line(point=True).encode(
             x=alt.X('hour:T', title='Time'),
             y=alt.Y('soil_moisture:Q', title='Soil Moisture (%)'),
             color=alt.Color('plant_name:N', legend=None),
-            tooltip=['plant_name', 'hour', 'soil_moisture']
+            tooltip=['plant_name', 'hour_formatted', 'moisture_formatted']
         ).properties(
             title='Average Soil Moisture Trends (Last 24 Hours)',
             height=400

@@ -112,7 +112,7 @@ class PlantDataProcessor:
 
     @st.cache_data(ttl=60)
     def identify_critical_plants(_self) -> pd.DataFrame:
-        """Identify plants with critical issues using efficient vectorized operations."""
+        """Identify plants with critical issues using efficient vectorised operations."""
         latest_readings = _self.get_latest_readings()
         if latest_readings.empty:
             return pd.DataFrame()
@@ -148,14 +148,19 @@ class PlantDataProcessor:
         if issue_rows.empty:
             return pd.DataFrame()
 
-        issue_messages = (
-            issue_rows['is_temp_issue'].map(
-                lambda x: f"Extreme temperature: {x:.1f}°C" if x else "0.0°C") +
-            issue_rows['is_moisture_issue'].map(
-                lambda x: f"; Extreme moisture: {x:.1f}%" if x else "0.0%") +
-            issue_rows['is_stale'].map(
-                lambda x: f"; Stale reading: {x:.1f} hours old" if x else "0.0 hours old")
-        )
+        def create_issue_message(row):
+            issues = []
+            if row['is_temp_issue']:
+                issues.append(
+                    f"Extreme temperature: {row['temperature']:.1f}°C")
+            if row['is_moisture_issue']:
+                issues.append(f"Extreme moisture: {row['soil_moisture']:.1f}%")
+            if row['is_stale']:
+                issues.append(
+                    f"Stale reading: {row['time_diff_hr']:.1f} hours old")
+            return "; ".join(issues)
+
+        issue_messages = issue_rows.apply(create_issue_message, axis=1)
 
         return pd.DataFrame({
             'plant_id': issue_rows['plant_id'].values,
@@ -165,10 +170,10 @@ class PlantDataProcessor:
         })
 
     @st.cache_data(ttl=300)
-    def get_plants_with_least_readings(_self, limit: int = 5) -> pd.DataFrame:
+    def get_plants_with_least_readings(_self) -> pd.DataFrame:
         """Get plants with the least number of readings."""
         query = """
-        SELECT TOP (?) 
+        SELECT TOP 5
             p.plant_id,
             p.name as plant_name,
             COUNT(r.record_id) as reading_count
@@ -177,7 +182,7 @@ class PlantDataProcessor:
         GROUP BY p.plant_id, p.name
         ORDER BY reading_count
         """
-        return _self.db_manager.execute_query(query, (limit,))
+        return _self.db_manager.execute_query(query)
 
     @st.cache_data(ttl=60)
     def get_24h_readings(_self) -> pd.DataFrame:
