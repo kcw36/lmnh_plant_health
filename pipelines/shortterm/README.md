@@ -1,7 +1,6 @@
-
 # Short Term Pipeline
 
-## Setup
+# Setup
 - Setup virtual environment
     - Run `python3 -m venv .venv`
     - Run `source .venv/bin/activate`
@@ -9,7 +8,29 @@
     - Run `pip install -r requirements.txt`
 
 
-## `extract_short.py` module
+# `.env file`
+
+```sh
+DB_HOST=<DB_IP_ADDRESS>
+DB_PORT=<PORT>
+DB_NAME=<NAME_OF_DB>
+DB_PASSWORD=<PASS_FOR_DB>
+DB_USER=<USER_FOR_ACCESSING_DB>
+DB_SCHEMA=<SCHEMA_USED_FOR_DB>
+
+AWS_REGION=<REGION_THAT_RESOURCES_DEPLOY_TO>
+AWS_ACCESS_KEY_ID=<AWS_USER_KEY_IDENTIFIER>
+AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
+S3_BUCKET=<BUCKET_FROM_TERRAFORM>
+```
+
+# `pipeline_short` script
+
+
+
+## Python modules
+
+## `extract` module
 
 ### Key Steps 
 - Defines a custom `APIError` class to raise specific HTTP-related issues (404, 500, etc)
@@ -20,7 +41,7 @@
 
 
 
-## `transform_short.py` module
+## `transform` module
 
 Responsible for transforming the raw plant data into a clean, structured format, 
 so that it is ready for the loading phase
@@ -51,7 +72,7 @@ The transformed DataFrame contains the following columns:
 - 'botanist_email' (str object)
 - 'botanist_phone' (str object)
 
-## load_short.py script
+## `load` module
 
 - Takes in transformed data as a pandas DataFrame
 - Has a function to insert data in every table within the database
