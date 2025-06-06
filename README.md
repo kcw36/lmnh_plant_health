@@ -12,7 +12,7 @@
 
 ## Navigating the Repository
 
-- Semantically similiar content ahs been grouped into sub directories of this repository.
+- Semantically similar content has been grouped into sub directories of this repository.
 - Each sub directory and its content is explained below.
 
 ### Project planning
