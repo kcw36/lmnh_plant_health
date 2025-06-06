@@ -8,6 +8,7 @@
         - Short pipeline
         - Long pipeline
     - Glue Crawler
+    - SNS Topic
 - It uses the variables defined in a `terraform.tfvars` file that are used by `variables.tf`
 
 ## Install dependencies

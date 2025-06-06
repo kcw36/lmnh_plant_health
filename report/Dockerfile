@@ -14,6 +14,7 @@ RUN curl https://packages.microsoft.com/config/rhel/7/prod.repo | tee /etc/yum.r
 RUN ACCEPT_EULA=Y dnf install -y msodbcsql18
 RUN export CFLAGS=”-I/opt/include” && export LDFLAGS=”-L/opt/lib”
 
+COPY data.py .
 COPY report.py .
 
 CMD [ "report.lambda_handler" ]

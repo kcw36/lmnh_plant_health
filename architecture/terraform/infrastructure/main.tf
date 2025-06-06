@@ -52,6 +52,24 @@ data "aws_ecs_cluster" "c17-ecs-cluster" {
   cluster_name = "c17-ecs-cluster"
 }
 
+# SNS Topic
+
+resource "aws_sns_topic" "report-topic" {
+  name  = "c17-cattus-topic"
+
+  tags = {
+    Environment = "dev"
+    Terraform   = "true"
+  }
+}
+
+resource "aws_sns_topic_subscription" "sms_subscription" {
+  topic_arn = aws_sns_topic.report-topic.arn
+  protocol    = "sms"
+  endpoint    = "+15551234567"
+}
+
+
 # S3 BUCKET
 
 resource "aws_s3_bucket" "s3_bucket" {
@@ -348,6 +366,12 @@ resource "aws_iam_policy" "lambda_policy" {
           "logs:PutLogEvents"
         ],
         Resource = "*"
+      },
+      {
+        "Sid": "PublishSNSMessage",
+        "Effect": "Allow",
+        "Action": "sns:Publish",
+        "Resource": aws_sns_topic.report-topic.arn
       }
     ]
   })
@@ -371,7 +395,14 @@ resource "aws_lambda_function" "report_lambda" {
 
     environment {
         variables = {
-            
+            DB_HOST=var.DB_HOST
+            DB_PORT=var.DB_PORT
+            DB_USER=var.DB_USER
+            DB_PASSWORD=var.DB_PASSWORD
+            DB_NAME=var.DB_NAME
+            DB_SCHEMA=var.DB_SCHEMA
+            TOPIC_REGION=var.AWS_REGION
+            TOPIC_ARN=aws_sns_topic.report-topic.arn
         }
     }
 }
