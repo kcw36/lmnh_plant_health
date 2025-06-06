@@ -37,12 +37,28 @@ class DatabaseFunctions:
                             """
         return connect(connection_string)
 
-    def execute_query(self, query: str, params: tuple[str] = None) -> pd.DataFrame:
+    def execute_query(self, query: str, params: tuple = None) -> pd.DataFrame:
         """Execute SQL query and return results as DataFrame."""
         filterwarnings(
             'ignore', message='pandas only supports SQLAlchemy connectable')
-        with self.get_connection() as conn:
-            return pd.read_sql(query, conn, params=params)
+        try:
+            with self.get_connection() as conn:
+                if params:
+                    # Convert params to a list if it's a tuple
+                    param_list = list(params)
+                    # Create a cursor and execute the query with parameters
+                    with conn.cursor() as cursor:
+                        cursor.execute(query, param_list)
+                        columns = [column[0] for column in cursor.description]
+                        data = cursor.fetchall()
+                        return pd.DataFrame.from_records(data, columns=columns)
+                else:
+                    return pd.read_sql(query, conn)
+        except Exception as e:
+            self.logger.error(f"Error executing query: {str(e)}")
+            self.logger.error(f"Query: {query}")
+            self.logger.error(f"Params: {params}")
+            return pd.DataFrame()
 
 
 class PlantDataProcessor:
@@ -217,7 +233,7 @@ class PlantDataProcessor:
 
     @st.cache_data(ttl=300)
     def get_filtered_data(_self, botanist_id: int = None,
-                          plant_species: str = None) -> pd.DataFrame:
+                          plant_species: list[str] = None) -> pd.DataFrame:
         """Get filtered plant data based on botanist and/or plant species."""
 
         base_query = """
@@ -236,8 +252,9 @@ class PlantDataProcessor:
             params.append(botanist_id)
 
         if plant_species:
-            conditions.append("p.name = ?")
-            params.append(plant_species)
+            placeholders = ','.join(['?' for _ in plant_species])
+            conditions.append(f"p.name IN ({placeholders})")
+            params.extend(plant_species)
 
         if conditions:
             base_query += " WHERE " + " AND ".join(conditions)

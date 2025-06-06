@@ -58,7 +58,8 @@ class AlertsDisplay:
             def display_row(row):
                 st.error(f"**{row['plant_name']}** (ID: {row['plant_id']})")
                 st.write(f"Issues: {row['issues']}")
-                st.write(f"Last reading: {row['last_reading']}")
+                st.write(
+                    f"Last reading: {pd.to_datetime(row['last_reading']).strftime('%Y-%m-%d %H:%M:%S')}")
                 st.divider()
             critical_plants_df.apply(display_row, axis=1)
 
@@ -130,6 +131,8 @@ class TimeSeriesCharts:
             hourly_data = hourly_data[hourly_data['plant_name'].isin(
                 filtered_plants)]
 
+        hourly_data = hourly_data.copy()
+
         hourly_data['hour_formatted'] = hourly_data['hour'].dt.strftime(
             '%H:%M')
         hourly_data['moisture_formatted'] = hourly_data['soil_moisture'].round(
@@ -161,20 +164,21 @@ class FilterComponents:
 
         if selected_botanist != "All Botanists":
             return int(botanist_df[botanist_df['name'] == selected_botanist]['botanist_id'].iloc[0])
+        return None
 
     @staticmethod
-    def create_species_filter(species_df: pd.DataFrame) -> str:
-        """Create a select box for plant species filtering."""
-
-        species_options = ["All Species"] + species_df['name'].tolist()
-        selected_species = st.sidebar.selectbox(
+    def create_species_filter(species_df: pd.DataFrame) -> list[str]:
+        """Create a multiselect box for plant species filtering."""
+        species_options = species_df['name'].tolist()
+        selected_species = st.sidebar.multiselect(
             "🌱 Filter by Plant Species:",
             options=species_options,
-            help="Filter data by plant species"
+            help="Filter data by plant species (select multiple)"
         )
 
-        if selected_species != "All Species":
+        if selected_species:
             return selected_species
+        return None
 
 
 class DataTableDisplay:
