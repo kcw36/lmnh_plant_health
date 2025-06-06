@@ -291,7 +291,15 @@ resource "aws_ecs_task_definition" "task" {
                 "name": "DB_SCHEMA",
                 "value": var.DB_SCHEMA
             }
-        ]
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-group": "/ecs/c17-cattus-dashboard-logs",
+                "awslogs-region": var.AWS_REGION,
+                "awslogs-stream-prefix": "ecs"
+            }
+        }
     }])
     execution_role_arn = aws_iam_role.ecs_task_exec_role.arn
     task_role_arn = aws_iam_role.ecs_task_exec_role.arn
