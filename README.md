@@ -8,7 +8,7 @@
 - We are a team of data engineers working for **Liverpool Museum of Natural History (LMNH)**.
 - LMNH has sensors attached to their plants which outputs data about the plant to an API every minute.
 - The team want to store the last 24 hours of data, keep a summary record of all data recorded and view both sets of data in a live dashboard.
-- The team would also like to be notifued through messaging when a plant has recordings that need tending to e.g. an unhealthy plant.
+- The team would also like to be notified through messaging when a plant has recordings that need tending to e.g. an unhealthy plant.
 
 ## Navigating the Repository
 
