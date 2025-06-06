@@ -44,9 +44,7 @@ class DatabaseFunctions:
         try:
             with self.get_connection() as conn:
                 if params:
-                    # Convert params to a list if it's a tuple
                     param_list = list(params)
-                    # Create a cursor and execute the query with parameters
                     with conn.cursor() as cursor:
                         cursor.execute(query, param_list)
                         columns = [column[0] for column in cursor.description]
