@@ -26,3 +26,9 @@ def test_lambda_handler_success(mock_pipeline):
     response = lambda_handler({}, {})
     assert response["statusCode"] == 200
     assert response["message"] == "Short-term ETL pipeline completed."
+
+
+@patch("pipeline_short.run_pipeline", side_effect=Exception("failed"))
+def test_lambda_handler_fails(mock_pipeline):
+    with pytest.raises(RuntimeError, match="Error with Python runtime."):
+        lambda_handler({}, {})
