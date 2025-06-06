@@ -1,10 +1,29 @@
-"""Simple function"""
+"""Hello World Module"""
+
+from logging import getLogger
 
 
 def hello_world():
-    """Returns a message."""
     return "Hello World!"
 
 
-if __name__ == "__main__":
-    print(hello_world())
+def lambda_handler(event, context):
+    """
+    Main Lambda Handler Function.
+    Parameters:
+        event: Dict containing the lambda function event data
+        context: LAMBDA RUNTIME CONTEXT
+    Returns:
+        Dict containing status message
+    """
+    logger = getLogger()
+    logger.info("Initiating Info level logger.")
+    try:
+        logger.info(hello_world())
+        return {
+            "statusCode": 200,
+            "message": "Hello."
+        }
+    except Exception as e:
+        logger.error("Error processing hello world: %s", str(e))
+        raise RuntimeError("Error with Python runtime.")
