@@ -100,6 +100,18 @@ class TimeSeriesCharts:
                 align='center', baseline='middle', fontSize=16
             ).encode(text='text')
 
+        if not filtered_plants:
+            st.warning('Please select filters to view data')
+            return alt.Chart(pd.DataFrame()).mark_point().encode(
+                x=alt.X('hour:T', title='Time'),
+                y=alt.Y('temperature:Q', title='Temperature (°C)' if metric ==
+                        'temperature' else 'Soil Moisture (%)')
+            ).properties(
+                title='Average Temperature Trends (Last 24 Hours)' if metric == 'temperature'
+                else 'Average Soil Moisture Trends (Last 24 Hours)',
+                height=400
+            )
+
         data = hourly_data.copy()
         if filtered_plants:
             data = data[data['plant_name'].isin(filtered_plants)]
@@ -207,6 +219,7 @@ class DataTableDisplay:
             hide_index=True,
             use_container_width=True
         )
+        return None
 
 
 class DashboardLayout:

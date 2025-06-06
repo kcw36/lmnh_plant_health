@@ -56,7 +56,7 @@ class PlantMonitoringDashboard:
 
             return selected_botanist, selected_species
 
-        except Exception as e:
+        except ValueError as e:
             st.sidebar.error(f"Error loading filter options: {str(e)}")
             return None, None
 
@@ -64,6 +64,9 @@ class PlantMonitoringDashboard:
     def _get_filtered_plant_list(_self, botanist_id: int,
                                  plant_species: str) -> list[str]:
         """Get list of plant names based on current filters."""
+        if not botanist_id and (not plant_species or len(plant_species) == 0):
+            return None
+
         try:
             filtered_data = _self.data_processor.get_filtered_data(
                 botanist_id, plant_species)
@@ -73,7 +76,7 @@ class PlantMonitoringDashboard:
 
             return filtered_data['plant_name'].tolist() if not filtered_data.empty else []
 
-        except Exception as e:
+        except ValueError as e:
             _self.logger.error(f"Error getting filtered plant list: {str(e)}")
             st.error(f"{str(e)}")
             return []
@@ -108,7 +111,7 @@ class PlantMonitoringDashboard:
                 avg_metrics['avg_soil_moisture']
             )
 
-        except Exception as e:
+        except ValueError as e:
             st.error(f"Error loading key metrics: {str(e)}")
             self.logger.error(f"Key metrics section error: {str(e)}")
 
@@ -121,7 +124,7 @@ class PlantMonitoringDashboard:
             low_reading_plants = self.data_processor.get_plants_with_least_readings()
             self.alerts.show_low_reading_plants(low_reading_plants)
 
-        except Exception as e:
+        except ValueError as e:
             st.error(f"Error loading alerts: {str(e)}")
             self.logger.error(f"Alerts section error: {str(e)}")
 
@@ -153,7 +156,7 @@ class PlantMonitoringDashboard:
             )
             st.altair_chart(moisture_plot, use_container_width=True)
 
-        except Exception as e:
+        except ValueError as e:
             st.error(f"Error loading trends: {str(e)}")
             self.logger.error(f"Trends section error: {str(e)}")
 
@@ -165,7 +168,7 @@ class PlantMonitoringDashboard:
                 self.data_table.show_latest_readings_table(
                     latest_readings, filtered_plants
                 )
-            except Exception as e:
+            except ValueError as e:
                 st.error(f"Error loading data table: {str(e)}")
                 self.logger.error(f"Data table section error: {str(e)}")
 
