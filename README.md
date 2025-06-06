@@ -33,7 +33,7 @@
 
 ### Pipelines
 
-- The `pipelines` directory contains the two extract, transform, load pipelines used in this project
+- The `pipelines` directory contains the two extract, transform, load pipelines used in this project.
 - They are seperated into two sub directories:
     - `longterm`
         - Loads summary data from the AWS relational database service into the S3 bucket for long term storage
