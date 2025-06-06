@@ -5,3 +5,5 @@ pyodbc
 pandas
 numpy
 streamlit
+awswrangler
+boto3
