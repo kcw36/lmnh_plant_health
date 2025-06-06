@@ -9,3 +9,11 @@ __pycache__
 
 *.csv
 .csv
+
+.terraform*
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+*.json
+

@@ -20,7 +20,8 @@ def test_create_data_directory(exists):
             if exists:
                 mock_mkdir.assert_not_called()
             else:
-                mock_mkdir.assert_has_calls([call("data"), call("data/plant")])
+                mock_mkdir.assert_has_calls(
+                    [call("/tmp/data"), call("/tmp/data/plant")])
     assert actual != exists
 
 
@@ -31,7 +32,7 @@ def delete_data_directory(success):
         with patch("load.rmtree") as mock_rmtree:
             mock_exists.return_value = success
             actual = delete_data_directory()
-            mock_rmtree.assert_called_once_with("data")
+            mock_rmtree.assert_called_once_with("/tmp/data")
     assert actual != success
 
 

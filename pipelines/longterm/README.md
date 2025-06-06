@@ -52,18 +52,26 @@ DB_SCHEMA=<SCHEMA_USED_FOR_DB>
 AWS_REGION=<REGION_THAT_RESOURCES_DEPLOY_TO>
 AWS_ACCESS_KEY_ID=<AWS_USER_KEY_IDENTIFIER>
 AWS_SECRET_ACCESS_KEY=<AWS_USER_KEY_SECRET>
+S3_BUCKET=<BUCKET_FROM_TERRAFORM>
 ```
+
+# Running the Historic Pipeline
+- From the `pipelines/longterm` directory
+- Run `python3 pipeline.py`
 
 # Modules
 
 <b> All files should be ran from the module directory `/pipelines/longterm/` </b>
 
 ## `pipeline`
+- Script for running the full etl pipeline from RDS to S3.
+- Contains a lambda handler for dockerisation with a lambda layer
 
 ## `extract`
 - Provides utilities for extracting data from a cloud hosted RDS for SQL Server Instance.
 
 ## `transform`
+- Provides utilities for normalising data ready for loading into an S3 Bucket.
 
 ## `load`
 - Provides utilties for loading data into a cloud hosted AWS S3 bucket.
