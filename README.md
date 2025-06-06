@@ -36,9 +36,9 @@
 - The `pipelines` directory contains the two extract, transform, load pipelines used in this project.
 - They are seperated into two sub directories:
     - `longterm`
-        - Loads summary data from the AWS relational database service into the S3 bucket for long term storage
+        - Loads summary data from the AWS relational database service into the S3 bucket for long term storage.
     - `shortterm`
-        - Loads all data from LMNH API into AWS relational database service
+        - Loads all data from LMNH API into AWS relational database service.
 
 ### Dashboard
 
@@ -50,9 +50,9 @@
 
 ## Using the repository
 
-- These instructions assume you have an RDS instance created for you 
+- These instructions assume you have an RDS instance created for you. 
     - If you do not, make that first.
-- Each directory as stated above serves a purpose
+- Each directory as stated above serves a purpose.
 - To use this repositoryyou must follow the usage instructions in each directory `README` in order:
     - In AWS: 
         - `architecture/database`
@@ -60,8 +60,8 @@
     - Local
         - `architecture/database`
         - `pipelines/shortterm`
-        - Re run the pipeline multiple times to populate the RDS
+        - Re run the pipeline multiple times to populate the RDS.
         - `pipelines/longterm`
-        - Re run the pipeline multiple times to populate the RDS as longterm pipeline clears it and you need the data for dashboard 
+        - Re run the pipeline multiple times to populate the RDS as longterm pipeline clears it and you need the data for dashboard. 
         - `pipelines/shortterm`
         - `dashboard`
