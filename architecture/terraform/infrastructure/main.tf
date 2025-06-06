@@ -59,6 +59,12 @@ resource "aws_s3_bucket" "s3_bucket" {
     force_destroy = true
 }
 
+resource "aws_s3_object" "output_folder" {
+  bucket = aws_s3_bucket.s3_bucket.id
+  key    = "output/"
+  content = ""
+}
+
 #  GLUE
 
 data "aws_iam_policy" "glue_service_policy" {
@@ -215,8 +221,8 @@ resource "aws_iam_role_policy_attachment" "ecs_task_exec_ecs_role" {
 resource "aws_ecs_task_definition" "task" {
     depends_on = [ aws_iam_role_policy_attachment.ecs_task_exec_ecs_role ]
     family = "c17-cattus-dashboard-td" 
-    memory = 2048
-    cpu = 1024
+    memory = 1024
+    cpu = 512
     container_definitions = jsonencode([{
         name = "dashboard"
         image = "129033205317.dkr.ecr.eu-west-2.amazonaws.com/c17-cattus-dashboard-ecr:latest"
@@ -355,7 +361,7 @@ resource "aws_iam_role_policy_attachment" "lambda_role_attach" {
 resource "aws_lambda_function" "report_lambda" {
     depends_on = [ aws_iam_role_policy_attachment.lambda_role_attach ]
     timeout = 120
-    memory_size = 1024
+    memory_size = 512
 
     function_name = "c17-cattus-report-lambda"
     role          = aws_iam_role.lambda_role.arn
@@ -373,7 +379,7 @@ resource "aws_lambda_function" "report_lambda" {
 resource "aws_lambda_function" "short_pipeline_lambda" {
     depends_on = [ aws_iam_role_policy_attachment.lambda_role_attach ]
     timeout = 120
-    memory_size = 1024
+    memory_size = 512
 
     function_name = "c17-cattus-short-pipeline-lambda"
     role          = aws_iam_role.lambda_role.arn
@@ -397,7 +403,7 @@ resource "aws_lambda_function" "short_pipeline_lambda" {
 resource "aws_lambda_function" "long_pipeline_lambda" {
     depends_on = [ aws_iam_role_policy_attachment.lambda_role_attach ]
     timeout = 120
-    memory_size = 1024
+    memory_size = 512
 
     function_name = "c17-cattus-long-pipeline-lambda"
     role          = aws_iam_role.lambda_role.arn

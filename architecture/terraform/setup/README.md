@@ -1,6 +1,6 @@
 # Setup
 
-- This is Terraform deploy scripts for deploying data storage infrastructure to AWS:
+- These are Terraform deploy scripts for deploying data storage infrastructure to AWS:
     - ECR repositories
 - It uses the variables defined in a `terraform.tfvars` file that are used by `variables.tf`
 

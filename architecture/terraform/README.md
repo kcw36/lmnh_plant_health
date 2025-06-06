@@ -8,6 +8,9 @@
 - They are responsible for storing the report, dashboard and pipeline images on AWS
 
 ## `infrastructure`
+- Creates the full cloud architecture
+- Includes lambda functions, S3 buckets, ECS services and Glue
+- Responsible for serving the dashboard, sending the message notifcations and updating the data
 
 ## `push_ecr` script
 - This should be ran after the setup stage
@@ -17,3 +20,6 @@
     - In format: `<ecr-address>/<image-name>`
     - Example: `129033205317.dkr.ecr.eu-west-2.amazonaws.com/c17-cattus-dashboard-ecr`
 - The script will ask for these two inputs for completion
+- The script will also ask for folder location of dockerfile
+    - Give it the directory path in reference to the root repository
+    - E.g. for longterm pipeline the path is `pipelines/longterm`
