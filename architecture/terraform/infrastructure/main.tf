@@ -221,8 +221,8 @@ resource "aws_iam_role_policy_attachment" "ecs_task_exec_ecs_role" {
 resource "aws_ecs_task_definition" "task" {
     depends_on = [ aws_iam_role_policy_attachment.ecs_task_exec_ecs_role ]
     family = "c17-cattus-dashboard-td" 
-    memory = 1024
-    cpu = 512
+    memory = 2048
+    cpu = 1024
     container_definitions = jsonencode([{
         name = "dashboard"
         image = "129033205317.dkr.ecr.eu-west-2.amazonaws.com/c17-cattus-dashboard-ecr:latest"
