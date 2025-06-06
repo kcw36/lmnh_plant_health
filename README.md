@@ -13,7 +13,7 @@
 ## Navigating the Repository
 
 - Semantically similar content has been grouped into sub directories of this repository.
-- Each sub directory and its content is explained below.
+- Each sub-directory and its content is explained below.
 
 ### Project planning
 
