@@ -1,6 +1,5 @@
 # pylint: disable=no-self-argument
 """Calculates the statistics and data used in the dashboard and visualisations."""
-from os import environ as ENV
 from datetime import datetime
 from logging import getLogger, INFO, StreamHandler
 from sys import stdout
@@ -15,8 +14,8 @@ import streamlit as st
 class DatabaseFunctions:
     """Manages database connections and queries for the plant monitoring system."""
 
-    def __init__(self, config: dict):
-        """Initialise database manager with configuration."""
+    def __init__(self, config: dict[str]):
+        """Initialise database functions."""
         self.config = config
         self.logger = getLogger(__name__)
         self.logger.setLevel(INFO)
@@ -27,10 +26,10 @@ class DatabaseFunctions:
         self.logger.info("Getting RDS connection...")
         connection_string = f"""
                                 DRIVER={{ODBC Driver 18 for SQL Server}};
-                                SERVER={ENV["DB_HOST"]},{ENV["DB_PORT"]};
-                                DATABASE={ENV["DB_NAME"]};
-                                UID={ENV["DB_USER"]};
-                                PWD={ENV["DB_PASSWORD"]};
+                                SERVER={self.config["DB_HOST"]},{self.config["DB_PORT"]};
+                                DATABASE={self.config["DB_NAME"]};
+                                UID={self.config["DB_USER"]};
+                                PWD={self.config["DB_PASSWORD"]};
                                 TrustServerCertificate=yes;
                                 Encrypt=yes;
                                 Connection Timeout=30;
@@ -44,33 +43,31 @@ class DatabaseFunctions:
         try:
             with self.get_connection() as conn:
                 if params:
-                    param_list = list(params)
-                    with conn.cursor() as cursor:
-                        cursor.execute(query, param_list)
-                        columns = [column[0] for column in cursor.description]
-                        data = cursor.fetchall()
-                        return pd.DataFrame(data, columns=columns)
-                else:
-                    return pd.read_sql(query, conn)
+                    return pd.read_sql(query, conn, params=params)
+                return pd.read_sql(query, conn)
         except Exception as e:
-            self.logger.error(f"Error executing query: {str(e)}")
+            self.logger.error(f"Query failed: {e}")
             return pd.DataFrame()
 
 
 class PlantDataProcessor:
     """Processes plant monitoring data and performs statistical calculations."""
 
-    def __init__(self, db_manager: DatabaseFunctions):
-        """Initialise data processor with database manager."""
-        self.db_manager = db_manager
+    def __init__(self, db_functions: DatabaseFunctions):
+        """Initialise data processor with database functions."""
+        self.db_functions = db_functions
+        self.logger = getLogger(__name__)
+        self.logger.setLevel(INFO)
+        self.logger.addHandler(StreamHandler(stdout))
+        self.stats_calculator = StatisticsCalculator()
 
     @st.cache_data
     def get_total_plants(_self) -> int:
         """Get total number of plants in the system."""
 
         query = "SELECT COUNT(*) as total_plants FROM plant"
-        result = _self.db_manager.execute_query(query)
-        return int(result.iloc[0]['total_plants'])
+        result = _self.db_functions.execute_query(query)
+        return int(result.iloc[0]['total_plants']) if not result.empty else 0
 
     @st.cache_data()
     def get_active_botanists(_self) -> int:
@@ -80,8 +77,8 @@ class PlantDataProcessor:
         SELECT COUNT(DISTINCT botanist_id) as active_botanists 
         FROM botanist_plant
         """
-        result = _self.db_manager.execute_query(query)
-        return int(result.iloc[0]['active_botanists'])
+        result = _self.db_functions.execute_query(query)
+        return int(result.iloc[0]['active_botanists']) if not result.empty else 0
 
     @st.cache_data(ttl=300)
     def get_latest_readings(_self) -> pd.DataFrame:
@@ -111,35 +108,28 @@ class PlantDataProcessor:
         JOIN origin_country co ON c.country_id = co.country_id
         WHERE lr.record = 1
         """
-        return _self.db_manager.execute_query(query)
-
-    def get_average_metrics(self) -> dict[float]:
-        """Calculate average temperature and soil moisture from latest readings."""
-        latest_readings = self.get_latest_readings()
-
-        return {
-            'avg_temperature': float(latest_readings['temperature'].median()),
-            'avg_soil_moisture': float(latest_readings['soil_moisture'].median())
-        }
+        return _self.db_functions.execute_query(query)
 
     @st.cache_data(ttl=60)
     def identify_critical_plants(_self) -> pd.DataFrame:
-        """Identify plants with critical issues using efficient vectorised operations."""
+        """Identify plants with critical issues."""
+
         latest_readings = _self.get_latest_readings()
         if latest_readings.empty:
             return pd.DataFrame()
 
-        temp_outliers = StatisticsCalculator.detect_outliers(
+        temp_outliers = _self.stats_calculator.detect_outliers(
             latest_readings['temperature'])
-        moisture_outliers = StatisticsCalculator.detect_outliers(
+        moisture_outliers = _self.stats_calculator.detect_outliers(
             latest_readings['soil_moisture'])
+
         current_time = datetime.now()
         time_diffs = (
             current_time - pd.to_datetime(
                 latest_readings['recording_taken'])).dt.total_seconds() / 3600
         stale_data = time_diffs > 2
 
-        issues_df = pd.DataFrame({
+        issues_data = pd.DataFrame({
             'plant_id': latest_readings['plant_id'],
             'plant_name': latest_readings['plant_name'],
             'recording_taken': latest_readings['recording_taken'],
@@ -151,10 +141,10 @@ class PlantDataProcessor:
             'time_diff_hr': time_diffs
         })
 
-        issue_rows = issues_df[
-            issues_df['is_temp_issue'] |
-            issues_df['is_moisture_issue'] |
-            issues_df['is_stale']
+        issue_rows = issues_data[
+            issues_data['is_temp_issue'] |
+            issues_data['is_moisture_issue'] |
+            issues_data['is_stale']
         ]
 
         if issue_rows.empty:
@@ -184,6 +174,7 @@ class PlantDataProcessor:
     @st.cache_data(ttl=300)
     def get_plants_with_least_readings(_self) -> pd.DataFrame:
         """Get plants with the least number of readings."""
+
         query = """
         SELECT TOP 5
             p.plant_id,
@@ -194,7 +185,7 @@ class PlantDataProcessor:
         GROUP BY p.plant_id, p.name
         ORDER BY reading_count
         """
-        return _self.db_manager.execute_query(query)
+        return _self.db_functions.execute_query(query)
 
     @st.cache_data(ttl=60)
     def get_24h_readings(_self) -> pd.DataFrame:
@@ -212,20 +203,21 @@ class PlantDataProcessor:
         WHERE r.recording_taken >= DATEADD(hour, -24, GETDATE())
         ORDER BY r.recording_taken
         """
-        return _self.db_manager.execute_query(query)
+        return _self.db_functions.execute_query(query)
 
     @st.cache_data(ttl=300)
     def get_botanist_list(_self) -> pd.DataFrame:
-        """ Get list of all botanists."""
+        """Get list of all botanists."""
+
         query = "SELECT botanist_id, name FROM botanist ORDER BY name"
-        return _self.db_manager.execute_query(query)
+        return _self.db_functions.execute_query(query)
 
     @st.cache_data(ttl=300)
     def get_plant_species_list(_self) -> pd.DataFrame:
         """Get list of all plant species (unique plant names)."""
 
         query = "SELECT DISTINCT name FROM plant ORDER BY name"
-        return _self.db_manager.execute_query(query)
+        return _self.db_functions.execute_query(query)
 
     @st.cache_data(ttl=300)
     def get_filtered_data(_self, botanist_id: int = None,
@@ -248,6 +240,8 @@ class PlantDataProcessor:
             params.append(botanist_id)
 
         if plant_species:
+            if isinstance(plant_species, str):
+                plant_species = [plant_species]
             placeholders = ','.join(['?' for _ in plant_species])
             conditions.append(f"p.name IN ({placeholders})")
             params.extend(plant_species)
@@ -257,7 +251,9 @@ class PlantDataProcessor:
 
         base_query += " ORDER BY p.name"
 
-        return _self.db_manager.execute_query(base_query, tuple(params) if params else None)
+        result = _self.db_functions.execute_query(
+            base_query, tuple(params) if params else None)
+        return result
 
 
 class StatisticsCalculator:
@@ -265,8 +261,7 @@ class StatisticsCalculator:
 
     @staticmethod
     @st.cache_data(ttl=60)
-    def calculate_hourly_averages(data: pd.DataFrame,
-                                  metric_column: str,
+    def calculate_hourly_averages(data: pd.DataFrame, metric_column: str,
                                   time_column: str = 'recording_taken',
                                   group_column: str = 'plant_name') -> pd.DataFrame:
         """Calculate hourly averages for a specific metric grouped by plant species."""
@@ -274,7 +269,6 @@ class StatisticsCalculator:
             return pd.DataFrame()
 
         data = data.copy()
-
         data[time_column] = pd.to_datetime(data[time_column])
         data['hour'] = data[time_column].dt.floor('h')
 

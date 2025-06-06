@@ -46,13 +46,13 @@ class PlantMonitoringDashboard:
         st.sidebar.header("🔍 Filters")
 
         try:
-            botanist_df = self.data_processor.get_botanist_list()
-            species_df = self.data_processor.get_plant_species_list()
+            botanist_data = self.data_processor.get_botanist_list()
+            species_data = self.data_processor.get_plant_species_list()
 
             selected_botanist = self.filtering.create_botanist_filter(
-                botanist_df)
+                botanist_data)
             selected_species = self.filtering.create_species_filter(
-                species_df)
+                species_data)
 
             return selected_botanist, selected_species
 
@@ -93,8 +93,8 @@ class PlantMonitoringDashboard:
 
             if not latest_readings.empty:
                 avg_metrics = {
-                    'avg_temperature': latest_readings['temperature'].mean(),
-                    'avg_soil_moisture': latest_readings['soil_moisture'].mean()
+                    'avg_temperature': latest_readings['temperature'].median(),
+                    'avg_soil_moisture': latest_readings['soil_moisture'].median()
                 }
             else:
                 avg_metrics = {'avg_temperature': 0.0,
@@ -143,13 +143,13 @@ class PlantMonitoringDashboard:
                 readings_24h, 'soil_moisture'
             )
 
-            temp_plot = self.timeseries_charts.create_temperature_trend(
-                temp_hourly, filtered_plants
+            temp_plot = self.timeseries_charts.create_trend_chart(
+                temp_hourly, 'temperature', filtered_plants
             )
             st.altair_chart(temp_plot, use_container_width=True)
 
-            moisture_plot = self.timeseries_charts.create_moisture_trend(
-                moisture_hourly, filtered_plants
+            moisture_plot = self.timeseries_charts.create_trend_chart(
+                moisture_hourly, 'moisture', filtered_plants
             )
             st.altair_chart(moisture_plot, use_container_width=True)
 
@@ -210,13 +210,14 @@ class PlantMonitoringDashboard:
             if selected_botanist or selected_species:
                 filter_info = []
                 if selected_botanist:
-                    botanist_name = self.data_processor.get_botanist_list()
-                    botanist_name = botanist_name[
-                        botanist_name['botanist_id'] == selected_botanist
-                    ]['name'].iloc[0]
+                    botanist_data = self.data_processor.get_botanist_list()
+                    botanist_name = botanist_data[
+                        botanist_data['botanist_id'] == selected_botanist
+                    ]['name'].values[0]
                     filter_info.append(f"Botanist: {botanist_name}")
                 if selected_species:
-                    filter_info.append(f"Species: {selected_species}")
+                    filter_info.append(
+                        f"Species: {', '.join(selected_species)}")
 
                 st.info(f"🔍 **Active Filters:** {' | '.join(filter_info)}")
 
