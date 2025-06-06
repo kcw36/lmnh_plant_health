@@ -1,6 +1,4 @@
 """Module for extracting data from RDS."""
-
-
 from logging import getLogger
 from os import environ as ENV
 
@@ -39,7 +37,6 @@ def detect_outliers(series: Series) -> Series:
 
 def get_latest_readings(conn: Connection) -> DataFrame:
     """Get 3 latest readings for each plant."""
-
     query = """
         WITH LatestReadings AS (
         SELECT 
@@ -70,6 +67,7 @@ def get_latest_readings(conn: Connection) -> DataFrame:
 
 
 def create_issue_message(row):
+    """Create issues message if issues present."""
     issues = []
     if row['is_temp_issue']:
         issues.append(
